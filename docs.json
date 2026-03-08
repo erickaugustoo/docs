@@ -9,6 +9,15 @@
   },
   "favicon": "/favicon.png",
   "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Painel",
+          "icon": "browser",
+          "href": "https://app.useintegra.com.br"
+        }
+      ]
+    },
     "tabs": [
       {
         "tab": "Guides",
@@ -56,21 +65,7 @@
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "API Status",
-          "href": "https://api.useintegra.com.br/health",
-          "icon": "heart-pulse"
-        },
-        {
-          "anchor": "Painel",
-          "href": "https://app.useintegra.com.br",
-          "icon": "browser"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.webp",
