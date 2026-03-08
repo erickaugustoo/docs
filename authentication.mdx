@@ -1,0 +1,51 @@
+---
+title: "Autenticação"
+description: "Como autenticar suas chamadas à API usando API Keys"
+---
+
+Todas as rotas `/api/v1/*` requerem autenticação via API Key.
+
+## Header de autenticação
+
+```bash
+Authorization: Bearer ik_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+## Como obter uma API Key
+
+<Steps>
+  <Step title="Acesse o painel">
+    Entre em [app.useintegra.com.br](https://app.useintegra.com.br) e vá em **Settings > API Keys**.
+  </Step>
+  <Step title="Crie uma nova key">
+    Clique em **Nova API Key** e dê um nome descritivo (ex: "Integração CRM").
+  </Step>
+  <Step title="Copie a key">
+    <Warning>
+      A key só será exibida uma vez. Se perdê-la, revogue e crie uma nova.
+    </Warning>
+  </Step>
+</Steps>
+
+## Formato da key
+
+As API Keys seguem o formato `ik_live_` seguido de 64 caracteres hexadecimais:
+
+```
+ik_live_a1b2c3d4e5f6789...
+```
+
+## Segurança
+
+- A key é hasheada com **SHA-256** antes de ser armazenada
+- Cada key pertence a uma **organização** e filtra dados automaticamente
+- Keys podem ser **revogadas** a qualquer momento no painel
+- O último uso de cada key é rastreado automaticamente
+
+## Erros de autenticação
+
+| Status | Mensagem | Causa |
+|--------|----------|-------|
+| `401` | Missing Authorization header | Header não enviado |
+| `401` | Invalid API key format | Key não começa com `ik_live_` |
+| `401` | Invalid or revoked API key | Key inválida ou revogada |

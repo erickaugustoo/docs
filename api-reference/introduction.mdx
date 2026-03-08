@@ -1,33 +1,53 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Introdução"
+description: "Visão geral da API BFI da Integra"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+```
+https://api.useintegra.com.br
+```
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Autenticação
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
+Todos os endpoints requerem autenticação via API Key no header `Authorization`:
+
+```bash
+Authorization: Bearer ik_live_sua_key_aqui
+```
+
+<Card title="Como obter uma API Key" icon="key" href="/authentication">
+  Gere sua key no painel da Integra em Settings > API Keys.
 </Card>
 
-## Authentication
+## Endpoints disponíveis
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+### Campanhas
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/campaigns` | Listar campanhas da organização |
+| `GET` | `/api/v1/campaigns/{id}` | Detalhes de uma campanha |
+| `POST` | `/api/v1/campaigns` | Criar nova campanha de ligações |
+
+### Chamadas
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/calls` | Listar histórico de chamadas |
+| `GET` | `/api/v1/calls/{id}` | Detalhes de uma chamada |
+
+## Rate Limiting
+
+Limite de **60 requests por minuto** por API Key. Veja [Rate Limiting](/rate-limiting) para mais detalhes.
+
+## Formato de erro
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "error": "Descrição do erro"
+}
 ```
+
+Veja [Erros](/errors) para a lista completa de códigos.
