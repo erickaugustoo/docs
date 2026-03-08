@@ -1,0 +1,65 @@
+---
+title: "Erros"
+description: "Códigos de erro e formato de resposta"
+---
+
+Todas as respostas de erro seguem o mesmo formato JSON.
+
+## Formato
+
+```json
+{
+  "error": "Descrição do erro"
+}
+```
+
+## Códigos de erro
+
+| Status | Erro | Causa |
+|--------|------|-------|
+| `400` | Bad Request | Body ou parâmetros inválidos |
+| `401` | Unauthorized | API Key ausente, inválida ou revogada |
+| `403` | Forbidden | Sem permissão para o recurso |
+| `404` | Not Found | Recurso não encontrado |
+| `429` | Too Many Requests | [Rate limit](/rate-limiting) excedido (60 req/min) |
+| `500` | Internal Server Error | Erro interno — contate suporte |
+
+## Exemplos
+
+### Key inválida (401)
+
+```bash
+curl -H "Authorization: Bearer ik_live_invalida" \
+  https://api.useintegra.com.br/api/v1/campaigns
+```
+
+```json Response
+{
+  "error": "Invalid or revoked API key"
+}
+```
+
+### Recurso não encontrado (404)
+
+```bash
+curl -H "Authorization: Bearer ik_live_xxx" \
+  https://api.useintegra.com.br/api/v1/campaigns/id-inexistente
+```
+
+```json Response
+{
+  "error": "Campaign not found"
+}
+```
+
+### Rate limit excedido (429)
+
+```json Response
+{
+  "error": "Rate limit exceeded. Try again later."
+}
+```
+
+<Tip>
+  Sempre verifique o campo `error` na resposta para entender o que aconteceu. Os erros são descritivos em inglês para facilitar o debugging.
+</Tip>

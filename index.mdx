@@ -1,97 +1,58 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Introdução"
+description: "API pública da plataforma Integra para integrações externas"
 ---
 
-## Setting up
+## Bem-vindo à Integra API
 
-Get your documentation site up and running in minutes.
+A **Integra BFI** (Backend for Integrations) é a API pública da plataforma Integra. Com ela, você pode integrar campanhas de ligações e histórico de chamadas diretamente no seu sistema.
 
 <Card
-  title="Start here"
+  title="Quickstart"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Configure sua primeira integração em 3 minutos.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## O que você pode fazer
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Campanhas"
+    icon="phone-volume"
+    href="/api-reference/endpoint/list-campaigns"
   >
-    Edit your docs locally and preview them in real time.
+    Crie e gerencie campanhas de ligações automatizadas.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Chamadas"
+    icon="clock-rotate-left"
+    href="/api-reference/endpoint/list-calls"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Consulte o histórico completo de chamadas com transcrições.
   </Card>
   <Card
-    title="API documentation"
+    title="Autenticação"
+    icon="key"
+    href="/authentication"
+  >
+    Gere API Keys no painel e autentique suas chamadas.
+  </Card>
+  <Card
+    title="API Reference"
     icon="terminal"
     href="/api-reference/introduction"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Documentação completa de todos os endpoints.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Base URL
 
-Everything you need to create world-class documentation.
+```
+https://api.useintegra.com.br
+```
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+Todos os endpoints da API estão sob o prefixo `/api/v1/`.

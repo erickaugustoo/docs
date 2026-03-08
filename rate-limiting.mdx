@@ -1,0 +1,51 @@
+---
+title: "Rate Limiting"
+description: "Limites de requisições por minuto e como monitorá-los"
+---
+
+A API limita a **60 requests por minuto** por API Key.
+
+## Headers de resposta
+
+Toda resposta inclui headers de rate limiting:
+
+| Header | Descrição |
+|--------|-----------|
+| `X-RateLimit-Limit` | Limite total (60/min) |
+| `X-RateLimit-Remaining` | Requests restantes na janela |
+| `X-RateLimit-Reset` | Timestamp de reset (epoch seconds) |
+
+## Exemplo
+
+```bash
+< X-RateLimit-Limit: 60
+< X-RateLimit-Remaining: 42
+< X-RateLimit-Reset: 1709913600
+```
+
+## Excedendo o limite
+
+Ao exceder o limite, a API retorna `429 Too Many Requests`:
+
+```json
+{
+  "error": "Rate limit exceeded. Try again later."
+}
+```
+
+## Boas práticas
+
+<CardGroup cols={2}>
+  <Card title="Monitore os headers" icon="chart-line">
+    Verifique `X-RateLimit-Remaining` para evitar atingir o limite.
+  </Card>
+  <Card title="Retry com backoff" icon="rotate">
+    Implemente retry com backoff exponencial ao receber `429`.
+  </Card>
+  <Card title="Respeite o reset" icon="clock">
+    Aguarde `X-RateLimit-Reset` antes de tentar novamente.
+  </Card>
+  <Card title="Cache respostas" icon="database">
+    Cache respostas quando possível para reduzir chamadas.
+  </Card>
+</CardGroup>
