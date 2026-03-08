@@ -9,51 +9,31 @@
   },
   "favicon": "/favicon.png",
   "navigation": {
-    "tabs": [
+    "groups": [
       {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "pages": [
-              "index",
-              "quickstart",
-              "authentication"
-            ]
-          },
-          {
-            "group": "Conceitos",
-            "pages": [
-              "rate-limiting",
-              "errors"
-            ]
-          }
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "quickstart",
+          "authentication"
         ]
       },
       {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Campanhas",
-            "pages": [
-              "api-reference/endpoint/list-campaigns",
-              "api-reference/endpoint/get-campaign",
-              "api-reference/endpoint/create-campaign"
-            ]
-          },
-          {
-            "group": "Chamadas",
-            "pages": [
-              "api-reference/endpoint/list-calls",
-              "api-reference/endpoint/get-call"
-            ]
-          }
+        "group": "Conceitos",
+        "pages": [
+          "rate-limiting",
+          "errors"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api-reference/introduction",
+          "api-reference/endpoint/list-campaigns",
+          "api-reference/endpoint/get-campaign",
+          "api-reference/endpoint/create-campaign",
+          "api-reference/endpoint/list-calls",
+          "api-reference/endpoint/get-call"
         ]
       }
     ],
