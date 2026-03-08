@@ -25,15 +25,26 @@
           "errors"
         ]
       },
+      "---",
       {
         "group": "API Reference",
         "pages": [
           "api-reference/introduction",
-          "api-reference/endpoint/list-campaigns",
-          "api-reference/endpoint/get-campaign",
-          "api-reference/endpoint/create-campaign",
-          "api-reference/endpoint/list-calls",
-          "api-reference/endpoint/get-call"
+          {
+            "group": "Campanhas",
+            "pages": [
+              "api-reference/endpoint/list-campaigns",
+              "api-reference/endpoint/get-campaign",
+              "api-reference/endpoint/create-campaign"
+            ]
+          },
+          {
+            "group": "Chamadas",
+            "pages": [
+              "api-reference/endpoint/list-calls",
+              "api-reference/endpoint/get-call"
+            ]
+          }
         ]
       }
     ]
