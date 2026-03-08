@@ -44,6 +44,17 @@
               "api-reference/endpoint/list-calls",
               "api-reference/endpoint/get-call"
             ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/endpoint/list-webhooks",
+              "api-reference/endpoint/create-webhook",
+              "api-reference/endpoint/get-webhook",
+              "api-reference/endpoint/update-webhook",
+              "api-reference/endpoint/delete-webhook",
+              "api-reference/endpoint/list-webhook-deliveries"
+            ]
           }
         ]
       }
