@@ -36,21 +36,7 @@
           "api-reference/endpoint/get-call"
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "API Status",
-          "href": "https://api.useintegra.com.br/health",
-          "icon": "heart-pulse"
-        },
-        {
-          "anchor": "Painel",
-          "href": "https://app.useintegra.com.br",
-          "icon": "browser"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
     "light": "/logo/light.svg",
