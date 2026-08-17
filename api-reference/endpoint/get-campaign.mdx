@@ -1,4 +1,92 @@
 ---
 title: "Detalhes da campanha"
+description: "Campanha com a lista completa de destinatários e o motivo de cada falha"
 openapi: "GET /api/v1/campaigns/{id}"
 ---
+
+## Campos por canal
+
+O campo `channel` diz se a campanha é de voz ou de WhatsApp, e alguns campos só fazem sentido em um dos dois.
+
+| Campo | `voice` | `whatsapp` |
+|-------|---------|------------|
+| `agent` | O agente que liga | `null` |
+| `phone_number` | O número de origem | `null` |
+| `config` | Parâmetros de discagem | `null` |
+| `template_name` | `null` | Nome do template aprovado na Meta |
+| `started_at` | Quando a campanha começou | `null` |
+
+<Note>
+  `started_at` vem `null` no canal `whatsapp` de propósito. Internamente aquele carimbo é o batimento do processo de disparo, recarimbado a cada destinatário, e não o horário em que a campanha começou. Publicá-lo mentiria. Use `created_at` e `scheduled_at`.
+</Note>
+
+## Status dos destinatários
+
+Cada item de `recipients` tem um `status` próprio. O canal de WhatsApp usa a escala de entrega da Meta:
+
+| Status | Significado |
+|--------|-------------|
+| `PENDING` | Ainda não disparado |
+| `SENT` | Template entregue à Meta |
+| `DELIVERED` | Chegou ao aparelho |
+| `READ` | O contato abriu a mensagem |
+| `REPLIED` | O contato respondeu |
+| `FAILED` | A Meta recusou o envio. O motivo está em `error_message` |
+| `CANCELLED` | A campanha foi cancelada antes de disparar este contato |
+
+Os status nunca regridem: um recibo de entrega atrasado não rebaixa quem já respondeu.
+
+<Tip>
+  `error_message` traz o erro **cru da Meta**, com código e tudo (por exemplo `(#132000) Number of parameters does not match the expected number of params`). É o único lugar da API que diz por que um envio específico falhou — a lista de campanhas só sabe contar falhas.
+</Tip>
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl https://api.useintegra.com.br/api/v1/campaigns/cmp_9f8e7d \
+  -H "Authorization: Bearer ik_live_xxx"
+```
+
+```json Resposta 200
+{
+  "id": "cmp_9f8e7d",
+  "name": "Retomada de matrículas",
+  "status": "COMPLETED",
+  "channel": "whatsapp",
+  "template_name": "retomada_matricula",
+  "scheduled_at": "2026-09-01T14:00:00.000Z",
+  "agent": null,
+  "phone_number": null,
+  "config": null,
+  "project": { "id": "proj_abc123", "name": "Comercial" },
+  "total_recipients": 2,
+  "dispatched_count": 2,
+  "completed_count": 1,
+  "failed_count": 1,
+  "started_at": null,
+  "ended_at": "2026-09-01T14:03:12.000Z",
+  "created_at": "2026-08-17T10:32:00.000Z",
+  "recipients": [
+    {
+      "id": "rcp_111",
+      "phone_number": "+5511999999999",
+      "recipient_name": "Ana",
+      "status": "REPLIED",
+      "error_message": null,
+      "dynamic_variables": { "1": "Ana", "2": "quinta às 14h" }
+    },
+    {
+      "id": "rcp_222",
+      "phone_number": "+5521988887777",
+      "recipient_name": "Bruno",
+      "status": "FAILED",
+      "error_message": "(#132000) Number of parameters does not match the expected number of params",
+      "dynamic_variables": { "1": "Bruno" }
+    }
+  ]
+}
+```
+
+</CodeGroup>

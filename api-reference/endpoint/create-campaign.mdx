@@ -1,4 +1,155 @@
 ---
 title: "Criar campanha"
+description: "Dispare uma campanha de ligações ou de mensagens de WhatsApp"
 openapi: "POST /api/v1/campaigns"
 ---
+
+## Canais
+
+O campo `channel` decide o tipo de campanha. Ele é opcional e vale `voice` quando você não envia.
+
+| Canal | O que faz | Campos obrigatórios além dos comuns |
+|-------|-----------|--------------------------------------|
+| `voice` | Liga para a lista com um agente de voz | `agent_id`, `phone_number_id` |
+| `whatsapp` | Dispara um template aprovado pela Meta | `template_name` |
+
+Os campos comuns aos dois canais são `name`, `project_id`, `scheduled_at` e `recipients`.
+
+<Note>
+  No canal `voice`, `scheduled_at` precisa ser no futuro. No canal `whatsapp`, uma data no passado é aceita e dispara no próximo ciclo do worker — é assim que você agenda um "enviar agora".
+</Note>
+
+## Campanha de WhatsApp
+
+### Variáveis do template
+
+O corpo do template usa marcadores numerados: `Oi {{1}}, seu horário é {{2}}`. Cada destinatário preenche esses marcadores pelo `dynamic_variables`, com **chaves numéricas em texto**:
+
+```json
+{
+  "phone_number": "+5511999999999",
+  "recipient_name": "Ana",
+  "dynamic_variables": { "1": "Ana", "2": "quinta às 14h" }
+}
+```
+
+A chave `"n"` preenche o `{{n}}` do corpo. O que vale é a posição, não o nome: chaves como `leadName` só são aceitas no canal `voice`.
+
+<Warning>
+  A quantidade de variáveis de **cada** destinatário tem que bater com o número de `{{n}}` do corpo. Faltando ou sobrando, a campanha inteira é recusada com `422` antes de qualquer disparo — nenhuma mensagem é enviada. Confira o corpo do template no painel, em **Templates**.
+</Warning>
+
+### Antes de criar
+
+Cada número de WhatsApp tem um limite de conversas que pode iniciar em 24h, definido pela Meta. Uma lista maior que o disponível é recusada com `422`. Consulte [as conversas disponíveis](/api-reference/endpoint/campaigns-quota) antes de montar a lista.
+
+## Exemplos
+
+<CodeGroup>
+
+```bash Campanha de WhatsApp
+curl -X POST https://api.useintegra.com.br/api/v1/campaigns \
+  -H "Authorization: Bearer ik_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Retomada de matrículas",
+    "project_id": "proj_abc123",
+    "channel": "whatsapp",
+    "template_name": "retomada_matricula",
+    "meta_phone_external_id": "1046702081862213",
+    "scheduled_at": "2026-09-01T14:00:00Z",
+    "recipients": [
+      {
+        "phone_number": "+5511999999999",
+        "recipient_name": "Ana",
+        "dynamic_variables": { "1": "Ana", "2": "quinta às 14h" }
+      },
+      {
+        "phone_number": "+5521988887777",
+        "recipient_name": "Bruno",
+        "dynamic_variables": { "1": "Bruno", "2": "sexta às 10h" }
+      }
+    ]
+  }'
+```
+
+```bash Campanha de voz
+curl -X POST https://api.useintegra.com.br/api/v1/campaigns \
+  -H "Authorization: Bearer ik_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Confirmação de consulta",
+    "project_id": "proj_abc123",
+    "agent_id": "agt_xyz789",
+    "phone_number_id": "phn_456def",
+    "scheduled_at": "2026-09-01T14:00:00Z",
+    "recipients": [
+      {
+        "phone_number": "+5511999999999",
+        "recipient_name": "Ana",
+        "dynamic_variables": { "leadName": "Ana" }
+      }
+    ],
+    "config": {
+      "call_timeout": 45,
+      "voicemail_mode": "hangup",
+      "max_concurrent": 2
+    }
+  }'
+```
+
+```json Resposta 201
+{
+  "id": "cmp_9f8e7d",
+  "name": "Retomada de matrículas",
+  "status": "PENDING",
+  "channel": "whatsapp",
+  "template_name": "retomada_matricula",
+  "scheduled_at": "2026-09-01T14:00:00.000Z",
+  "agent": null,
+  "phone_number": null,
+  "config": null,
+  "total_recipients": 2,
+  "created_at": "2026-08-17T10:32:00.000Z"
+}
+```
+
+</CodeGroup>
+
+<Note>
+  Campanhas de WhatsApp respondem com `agent`, `phone_number` e `config` nulos: elas não têm agente de voz, número de origem próprio nem parâmetros de discagem.
+</Note>
+
+## Erros
+
+| Status | Quando acontece | O que fazer |
+|--------|-----------------|-------------|
+| `400` | Payload inválido: campo obrigatório do canal ausente, `scheduled_at` fora do ISO 8601, mais de 10.000 destinatários, telefone fora do E.164 | Corrija o corpo. A mensagem aponta o campo |
+| `404` | Projeto ou template não encontrado na sua organização | Confira `project_id` e `template_name` no painel |
+| `422` | Template não aprovado ou desabilitado, variáveis que não batem com o corpo, ou lista maior que a quota de 24h | Veja os exemplos abaixo |
+| `502` | Falha na comunicação com o serviço de WhatsApp | Leia o aviso abaixo antes de repetir |
+| `503` | Integração de WhatsApp não configurada na sua organização | Conecte um número de WhatsApp no painel |
+
+### 422 — variáveis que não batem com o corpo
+
+A validação roda sobre a lista inteira e para no primeiro destinatário irregular. A mensagem diz quantas variáveis o corpo exige e qual número está errado:
+
+```json
+{
+  "error": "O template \"retomada_matricula\" usa 2 variavel(is) no corpo ({{1}}..{{2}}); a linha do numero +5511999999999 precisa de exatamente 2 valor(es) preenchido(s)."
+}
+```
+
+### 422 — quota de conversas excedida
+
+```json
+{
+  "error": "Seu numero pode iniciar 137 conversas nas proximas 24h (limite da Meta). Reduza a lista ou divida em dias."
+}
+```
+
+<Warning>
+  **O `502` na criação não garante que a campanha deixou de ser criada.** A criação é gravada do outro lado em transação própria e pode ter sido concluída depois de estourar o tempo de resposta desta chamada.
+
+  Antes de repetir a requisição, [liste suas campanhas](/api-reference/endpoint/list-campaigns) e procure pelo `name` que você enviou. Repetir às cegas cria uma segunda campanha, e a lista inteira recebe o template duas vezes, consumindo quota da Meta em dobro. Não há como desfazer um disparo já entregue.
+</Warning>

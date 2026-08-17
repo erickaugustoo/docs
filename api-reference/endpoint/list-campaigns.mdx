@@ -1,4 +1,87 @@
 ---
 title: "Listar campanhas"
+description: "Campanhas de voz e de WhatsApp da organização, com paginação"
 openapi: "GET /api/v1/campaigns"
 ---
+
+A lista traz os dois canais juntos. Use o campo `channel` de cada item para distinguir campanha de ligações (`voice`) de campanha de mensagens (`whatsapp`).
+
+## Filtros
+
+| Parâmetro | Valores | Padrão |
+|-----------|---------|--------|
+| `page` | Número da página | `1` |
+| `limit` | Itens por página, máximo 100 | `20` |
+| `status` | `PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`, `CANCELLED` | Todos |
+| `project_id` | ID de um projeto da organização | Todos |
+
+Um `status` fora da lista responde `400` em vez de devolver uma lista vazia — assim um erro de digitação não passa por "nenhuma campanha".
+
+## Campos por canal
+
+Campanhas de WhatsApp vêm com `agent`, `phone_number`, `config` e `started_at` nulos, e com `template_name` preenchido. Os detalhes de cada campo estão em [Detalhes da campanha](/api-reference/endpoint/get-campaign).
+
+<Note>
+  A lista **não** traz os destinatários, só os contadores (`total_recipients`, `dispatched_count`, `completed_count`, `failed_count`). Para ver contato a contato, e o motivo de cada falha, use o endpoint de detalhes.
+</Note>
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl "https://api.useintegra.com.br/api/v1/campaigns?status=COMPLETED&limit=2" \
+  -H "Authorization: Bearer ik_live_xxx"
+```
+
+```json Resposta 200
+{
+  "campaigns": [
+    {
+      "id": "cmp_9f8e7d",
+      "name": "Retomada de matrículas",
+      "status": "COMPLETED",
+      "channel": "whatsapp",
+      "template_name": "retomada_matricula",
+      "scheduled_at": "2026-09-01T14:00:00.000Z",
+      "config": null,
+      "agent": null,
+      "phone_number": null,
+      "project": { "id": "proj_abc123", "name": "Comercial" },
+      "total_recipients": 2,
+      "dispatched_count": 2,
+      "completed_count": 1,
+      "failed_count": 1,
+      "started_at": null,
+      "ended_at": "2026-09-01T14:03:12.000Z",
+      "created_at": "2026-08-17T10:32:00.000Z"
+    },
+    {
+      "id": "cmp_1a2b3c",
+      "name": "Confirmação de consulta",
+      "status": "COMPLETED",
+      "channel": "voice",
+      "template_name": null,
+      "scheduled_at": "2026-08-30T13:00:00.000Z",
+      "config": { "call_timeout": 45, "max_concurrent": 2 },
+      "agent": { "id": "agt_xyz789", "name": "Bia" },
+      "phone_number": {
+        "id": "phn_456def",
+        "number": "+551130000000",
+        "friendly_name": "Comercial"
+      },
+      "project": { "id": "proj_abc123", "name": "Comercial" },
+      "total_recipients": 40,
+      "dispatched_count": 40,
+      "completed_count": 36,
+      "failed_count": 4,
+      "started_at": "2026-08-30T13:00:05.000Z",
+      "ended_at": "2026-08-30T13:41:22.000Z",
+      "created_at": "2026-08-29T18:10:00.000Z"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 2, "total": 12 }
+}
+```
+
+</CodeGroup>

@@ -34,7 +34,10 @@
             "pages": [
               "api-reference/endpoint/list-campaigns",
               "api-reference/endpoint/get-campaign",
-              "api-reference/endpoint/create-campaign"
+              "api-reference/endpoint/create-campaign",
+              "api-reference/endpoint/cancel-campaign",
+              "api-reference/endpoint/retry-campaign",
+              "api-reference/endpoint/campaigns-quota"
             ]
           },
           {

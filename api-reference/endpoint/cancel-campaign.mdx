@@ -1,0 +1,45 @@
+---
+title: "Cancelar campanha"
+description: "Interrompa uma campanha pendente ou em andamento"
+openapi: "POST /api/v1/campaigns/{id}/cancel"
+---
+
+Só campanhas com status `PENDING` ou `IN_PROGRESS` podem ser canceladas. Qualquer outro status responde `400`.
+
+O cancelamento fecha os destinatários que ainda não saíram: quem está `PENDING` passa a `CANCELLED`. Quem já foi disparado não é afetado — uma mensagem entregue não volta atrás.
+
+<Note>
+  Em campanhas de WhatsApp o cancelamento é aplicado pelo serviço de mensagens, que é o dono das regras de disparo. O efeito para você é o mesmo, e os erros `502` e `503` existem só nesse canal.
+</Note>
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl -X POST https://api.useintegra.com.br/api/v1/campaigns/cmp_9f8e7d/cancel \
+  -H "Authorization: Bearer ik_live_xxx"
+```
+
+```json Resposta 200
+{
+  "id": "cmp_9f8e7d",
+  "status": "CANCELLED",
+  "message": "Campaign cancelled successfully"
+}
+```
+
+</CodeGroup>
+
+## Erros
+
+| Status | Quando acontece |
+|--------|-----------------|
+| `400` | A campanha já terminou (`COMPLETED`, `FAILED` ou `CANCELLED`) |
+| `404` | Campanha não encontrada na sua organização |
+| `502` | Falha na comunicação com o serviço de WhatsApp |
+| `503` | Integração de WhatsApp não configurada |
+
+<Tip>
+  Cancelar uma campanha em andamento não interrompe uma mensagem já enviada, mas evita todas as que ainda não saíram. Quanto antes você cancelar, menos quota da Meta é consumida.
+</Tip>

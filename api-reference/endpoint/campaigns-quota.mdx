@@ -1,0 +1,63 @@
+---
+title: "Conversas disponíveis"
+description: "Quantas conversas de WhatsApp cada número ainda pode iniciar nas próximas 24h"
+openapi: "GET /api/v1/campaigns/quota"
+---
+
+A Meta limita quantas **conversas** um número de WhatsApp pode iniciar por janela de 24h. Este endpoint responde, por número conectado, quanto desse limite ainda está livre.
+
+Consulte antes de montar a lista de uma campanha: uma lista maior que o `available` do número é recusada com `422` na criação, depois de você já ter montado tudo.
+
+## Como o número é calculado
+
+```
+available = tier - used_24h
+```
+
+| Campo | O que é |
+|-------|---------|
+| `tier` | Limite de conversas por 24h que a Meta concede ao número. Sobe conforme a qualidade do número: 250, 1.000, 10.000, 100.000 |
+| `used_24h` | Destinatários únicos que receberam template nas últimas 24h, somando campanhas e envios avulsos |
+| `available` | O que sobra, nunca negativo |
+
+<Note>
+  A organização vem da sua API Key. Não há parâmetro de query: você sempre recebe os números da sua própria organização.
+</Note>
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl https://api.useintegra.com.br/api/v1/campaigns/quota \
+  -H "Authorization: Bearer ik_live_xxx"
+```
+
+```json Resposta 200
+{
+  "numbers": [
+    {
+      "external_id": "1046702081862213",
+      "name": "+55 11 91528-9611",
+      "tier": 1000,
+      "used_24h": 137,
+      "available": 863
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+Uma organização sem número de WhatsApp conectado recebe `{ "numbers": [] }`.
+
+## Erros
+
+| Status | Quando acontece |
+|--------|-----------------|
+| `502` | Falha na comunicação com o serviço de WhatsApp |
+| `503` | Integração de WhatsApp não configurada |
+
+<Tip>
+  O `tier` sobe sozinho conforme o número mantém boa qualidade e volume. Se o seu `available` está sempre no limite, divida a lista em dias em vez de tentar contornar o limite — bloqueio de qualidade na Meta é bem mais caro que um dia a mais de campanha.
+</Tip>

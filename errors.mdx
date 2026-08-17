@@ -21,8 +21,26 @@ Todas as respostas de erro seguem o mesmo formato JSON.
 | `401` | Unauthorized | API Key ausente, inválida ou revogada |
 | `403` | Forbidden | Sem permissão para o recurso |
 | `404` | Not Found | Recurso não encontrado |
+| `422` | Unprocessable Entity | Regra de negócio impediu a operação (ver abaixo) |
 | `429` | Too Many Requests | [Rate limit](/rate-limiting) excedido (60 req/min) |
 | `500` | Internal Server Error | Erro interno — contate suporte |
+| `502` | Bad Gateway | Falha na comunicação com o serviço de WhatsApp |
+| `503` | Service Unavailable | Integração de WhatsApp não configurada na organização |
+
+## Erros de campanha de WhatsApp
+
+O canal `whatsapp` tem regras que só podem ser verificadas no momento da chamada. Elas respondem `422` com a mensagem em português explicando o que fazer.
+
+| Causa | O que fazer |
+|-------|-------------|
+| Template ainda não aprovado pela Meta | Aguarde a aprovação. O status aparece no painel, em **Templates** |
+| Template desabilitado | Reative o template no painel |
+| Variáveis não batem com os `{{n}}` do corpo | Envie exatamente uma chave numérica por marcador. Veja [Criar campanha](/api-reference/endpoint/create-campaign) |
+| Lista maior que a quota de 24h do número | Reduza a lista ou divida em dias. Consulte [Conversas disponíveis](/api-reference/endpoint/campaigns-quota) |
+
+<Warning>
+  Um `502` na **criação** de campanha não garante que a campanha deixou de ser criada. Antes de repetir, [liste suas campanhas](/api-reference/endpoint/list-campaigns) e procure pelo `name` enviado. Repetir às cegas dispara o template duas vezes para a lista inteira.
+</Warning>
 
 ## Exemplos
 

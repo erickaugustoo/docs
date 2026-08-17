@@ -1,0 +1,55 @@
+---
+title: "Retentar campanha"
+description: "Reenfileire os destinatários que falharam em uma campanha finalizada"
+openapi: "POST /api/v1/campaigns/{id}/retry"
+---
+
+A retentativa devolve a campanha ao status `PENDING` e ela é reprocessada automaticamente. Só destinatários que falharam voltam para a fila: quem já recebeu não recebe de novo.
+
+## Quando cada canal aceita
+
+| Canal | Status da campanha | Destinatários que voltam para `PENDING` |
+|-------|--------------------|------------------------------------------|
+| `voice` | `COMPLETED` ou `FAILED` | `FAILED`, `NO_ANSWER` e `VOICEMAIL` |
+| `whatsapp` | `COMPLETED`, `FAILED` ou `CANCELLED` | `FAILED` |
+
+<Warning>
+  Uma campanha `IN_PROGRESS` **não** pode ser retentada, e a recusa é proposital: existe um processo vivo percorrendo a lista, e reenfileirar no meio faria um segundo processo reivindicar os mesmos destinatários. O resultado seria a mesma pessoa recebendo duas vezes.
+</Warning>
+
+## Contadores
+
+Os contadores da campanha (`dispatched_count`, `failed_count`) são compensados na mesma operação: as tentativas que vão ser refeitas saem da conta antes de o reprocessamento começar. Sem isso, uma campanha de 100 com 10 falhas retentada com sucesso terminaria com `dispatched_count` 110 contra `total_recipients` 100.
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl -X POST https://api.useintegra.com.br/api/v1/campaigns/cmp_9f8e7d/retry \
+  -H "Authorization: Bearer ik_live_xxx"
+```
+
+```json Resposta 200
+{
+  "id": "cmp_9f8e7d",
+  "status": "PENDING",
+  "retried_count": 7,
+  "message": "7 recipients will be retried"
+}
+```
+
+</CodeGroup>
+
+## Erros
+
+| Status | Quando acontece |
+|--------|-----------------|
+| `400` | Status não permite retentativa, ou não há destinatários com falha |
+| `404` | Campanha não encontrada na sua organização |
+| `502` | Falha na comunicação com o serviço de WhatsApp |
+| `503` | Integração de WhatsApp não configurada |
+
+<Note>
+  No canal `whatsapp` existe um caso em que a campanha inteira falha sem nenhum destinatário ter falhado: quando o template é pausado, rejeitado ou desabilitado entre o agendamento e o disparo. Nesse caso a retentativa reenfileira a lista toda depois de você reativar o template, e `retried_count` volta `0` porque não havia falhas individuais para refazer.
+</Note>
