@@ -1,0 +1,116 @@
+---
+title: "Claude e ChatGPT"
+description: "Consulte resultados e cuide das campanhas da Integra direto no Claude e no ChatGPT."
+---
+
+Com o conector da Integra, você pergunta no Claude ou no ChatGPT como foi a operação, abre uma ligação ou uma conversa e cria ou cancela campanhas sem sair do chat. O assistente usa a sua conta e enxerga só a organização que você escolher ao conectar.
+
+## Endereço do conector
+
+```text
+https://mcp.useintegra.com.br/mcp
+```
+
+<Warning>
+  Cole o endereço exatamente como está acima, sem barra no final. Com a barra, a conexão falha.
+</Warning>
+
+## Conectar
+
+<Tabs>
+  <Tab title="Claude">
+    <Steps>
+      <Step title="Adicione o conector">
+        No Claude, abra **Configurações** > **Conectores** e clique em **Adicionar conector personalizado**. Cole o endereço e salve.
+
+        Em contas Team e Enterprise, o proprietário adiciona o conector para a organização, e cada pessoa conecta a própria conta depois.
+      </Step>
+      <Step title="Entre na Integra">
+        Clique em **Conectar**. O Claude abre a página de login da Integra; use a mesma conta do painel.
+      </Step>
+      <Step title="Escolha a organização">
+        Confira as permissões, escolha a organização e clique em **Permitir**.
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="ChatGPT">
+    <Steps>
+      <Step title="Libere conectores personalizados">
+        Em workspaces Business e Enterprise, um administrador precisa liberar o modo desenvolvedor nas configurações do workspace.
+      </Step>
+      <Step title="Crie o conector">
+        Nas configurações do ChatGPT, adicione um conector personalizado com o endereço acima e escolha autenticação OAuth.
+      </Step>
+      <Step title="Entre na Integra e escolha a organização">
+        O ChatGPT abre a página de login da Integra. Entre com a sua conta, escolha a organização e clique em **Permitir**.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Exemplos de pedidos
+
+- "Como foi a operação nesta semana?"
+- "Quais ligações de ontem não terminaram em agendamento?"
+- "Me mostra o resumo da última ligação transferida."
+- "Qual agente teve mais atendimentos este mês?"
+- "Tem conversa no Inbox esperando alguém da equipe?"
+- "Cancela a campanha Reativação de outubro."
+
+## O que o assistente consegue ver
+
+Sem alterar nada, ele consulta:
+
+- o resumo da operação, o saldo de créditos e os limites do plano;
+- o histórico de ligações e de conversas de texto, com o desfecho de cada uma;
+- o detalhe de uma ligação (resumo, resultado, intenção e sentimento; a transcrição só quando você pede) ou de uma conversa de texto;
+- os agentes e o desempenho de cada um;
+- as campanhas, os destinatários e os templates do WhatsApp;
+- as conversas do Inbox e as mensagens de cada uma;
+- as métricas dos dashboards.
+
+## O que o assistente consegue fazer
+
+Com a permissão de campanhas, ele também pode criar uma campanha de voz ou de WhatsApp para uma lista de contatos, cancelar uma campanha e repetir os destinatários que falharam. O Claude e o ChatGPT pedem a sua confirmação antes de cada uma dessas ações.
+
+<Warning>
+  Campanhas ligam e mandam mensagens para pessoas reais e gastam créditos. Se o mesmo pedido for repetido no mesmo dia, a Integra devolve a campanha já criada em vez de criar outra.
+</Warning>
+
+## Permissões
+
+A tela de conexão mostra duas permissões:
+
+- Ver resultados, ligações, conversas, agentes, campanhas e métricas
+- Criar, cancelar e repetir campanhas (ligações e mensagens gastam créditos)
+
+O seu papel na organização continua valendo. O que você não pode fazer no painel, o assistente também não faz.
+
+## Desconectar
+
+No painel, abra **Ajustes** > **Aplicativos conectados** e clique em **Desconectar**. O assistente perde o acesso na hora. Desconecte também se suspeitar que alguém usou a sua conexão.
+
+Cada conexão vale para uma organização. Para trabalhar com outra, desconecte em **Ajustes** > **Aplicativos conectados** e conecte de novo escolhendo a outra organização.
+
+## Limites
+
+- Listas muito grandes voltam cortadas. Peça menos itens ou filtre por período, tipo ou agente.
+- Pelo chat, uma campanha aceita até 500 contatos. Para listas maiores, importe a planilha em **Campanhas**, no painel.
+
+## Problemas comuns
+
+<AccordionGroup>
+  <Accordion title="Esta conexão perdeu o acesso à organização">
+    Você saiu da organização ou o seu acesso mudou. Conecte a Integra de novo.
+  </Accordion>
+  <Accordion title="A conexão falha antes do login">
+    Confira se o endereço é exatamente `https://mcp.useintegra.com.br/mcp`, sem barra no final.
+  </Accordion>
+  <Accordion title="O assistente mostra dados da organização errada">
+    A conexão usa a organização escolhida na hora de conectar. Desconecte em **Ajustes** > **Aplicativos conectados** e conecte de novo escolhendo a organização certa.
+  </Accordion>
+</AccordionGroup>
+
+## Privacidade
+
+Para responder às suas perguntas, os dados que o assistente lê (resultados, ligações, conversas e campanhas) vão para o Claude ou para o ChatGPT, conforme o que você usa.
