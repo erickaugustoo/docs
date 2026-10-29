@@ -1,9 +1,9 @@
 ---
 title: "Claude e ChatGPT"
-description: "Consulte resultados e cuide das campanhas da Integra direto no Claude e no ChatGPT."
+description: "Consulte resultados, ajuste agentes, cuide das campanhas e responda o Inbox da Integra direto no Claude e no ChatGPT."
 ---
 
-Com o conector da Integra, você pergunta no Claude ou no ChatGPT como foi a operação, abre uma ligação ou uma conversa e cria ou cancela campanhas sem sair do chat. O assistente usa a sua conta e enxerga só a organização que você escolher ao conectar.
+Com o conector da Integra, você pergunta no Claude ou no ChatGPT como foi a operação, abre uma ligação ou uma conversa, ajusta um agente, cuida das campanhas e responde o Inbox sem sair do chat. O assistente usa a sua conta e enxerga só a organização que você escolher ao conectar.
 
 ## Endereço do conector
 
@@ -54,6 +54,10 @@ https://mcp.useintegra.com.br/mcp
 - "Quais ligações de ontem não terminaram em agendamento?"
 - "Me mostra o resumo da última ligação transferida."
 - "Qual agente teve mais atendimentos este mês?"
+- "Mostra o dashboard Operação de atendimento."
+- "O que a base de conhecimento diz sobre o horário de atendimento?"
+- "Troca a voz da Ana por uma voz feminina e publica."
+- "Cria um agente de texto chamado Atendimento."
 - "Tem conversa no Inbox esperando alguém da equipe?"
 - "Cancela a campanha Reativação de outubro."
 
@@ -64,25 +68,56 @@ Sem alterar nada, ele consulta:
 - o resumo da operação, o saldo de créditos e os limites do plano;
 - o histórico de ligações e de conversas de texto, com o desfecho de cada uma;
 - o detalhe de uma ligação (resumo, resultado, intenção e sentimento; a transcrição só quando você pede) ou de uma conversa de texto;
-- os agentes e o desempenho de cada um;
+- os agentes, a configuração de cada um e o desempenho;
+- as vozes e os modelos que dá para usar nos agentes;
+- as ferramentas e as bases de conhecimento da organização, inclusive os trechos que uma base devolve para uma pergunta;
+- os números de telefone e os agentes que atendem cada um;
 - as campanhas, os destinatários e os templates do WhatsApp;
 - as conversas do Inbox e as mensagens de cada uma;
-- as métricas dos dashboards.
+- as métricas e os dashboards salvos.
 
 ## O que o assistente consegue fazer
 
-Com a permissão de campanhas, ele também pode criar uma campanha de voz ou de WhatsApp para uma lista de contatos, cancelar uma campanha e repetir os destinatários que falharam. O Claude e o ChatGPT pedem a sua confirmação antes de cada uma dessas ações.
+Cada grupo de ações depende de uma permissão, que você vê na tela de conexão. O Claude e o ChatGPT pedem a sua confirmação antes de cada ação que muda alguma coisa.
+
+<AccordionGroup>
+  <Accordion title="Agentes">
+    - Criar um agente de voz ou de texto.
+    - Mudar as instruções, a voz, o modelo, as ferramentas, as bases e a primeira fala. As mudanças ficam no rascunho até você publicar.
+    - Publicar o rascunho.
+    - Ativar e desativar um agente.
+    - Colocar um agente para atender um número.
+    - Ligar para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. O teste gasta créditos.
+  </Accordion>
+  <Accordion title="Campanhas">
+    - Criar uma campanha de voz ou de WhatsApp para uma lista de contatos.
+    - Cancelar uma campanha.
+    - Repetir os destinatários que falharam.
+  </Accordion>
+  <Accordion title="Inbox">
+    - Passar uma conversa para a equipe ou devolver para a IA.
+    - Responder uma conversa por texto, em nome da equipe.
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  No Claude, o conector não dispara ligações: as campanhas são só de WhatsApp, e repetir falhas e ligar para testar o agente ficam no ChatGPT e no painel.
+</Note>
 
 <Warning>
-  Campanhas ligam e mandam mensagens para pessoas reais e gastam créditos. Se o mesmo pedido for repetido no mesmo dia, a Integra devolve a campanha já criada em vez de criar outra.
+  Campanhas e respostas do Inbox vão para pessoas reais e não têm volta, e campanhas e testes gastam créditos. Se o mesmo pedido for repetido logo em seguida, a Integra não executa de novo: a campanha repetida no mesmo dia devolve a que já foi criada, e a mensagem ou a ligação repetida em até 2 minutos não sai outra vez.
 </Warning>
 
 ## Permissões
 
-A tela de conexão mostra duas permissões:
+A tela de conexão mostra até quatro permissões:
 
-- Ver resultados, ligações, conversas, agentes, campanhas e métricas
+- Ver resultados, ligações, conversas, agentes, campanhas, métricas e configurações
 - Criar, cancelar e repetir campanhas (ligações e mensagens gastam créditos)
+- Criar, configurar, ativar, desativar e publicar agentes, vincular números e ligar para testar (o teste gasta créditos)
+- Assumir e responder conversas do Inbox (as mensagens vão para os seus contatos)
+
+No Claude, as permissões de campanhas e de agentes aparecem sem as ligações.
 
 O seu papel na organização continua valendo. O que você não pode fazer no painel, o assistente também não faz.
 
@@ -96,6 +131,7 @@ Cada conexão vale para uma organização. Para trabalhar com outra, desconecte 
 
 - Listas muito grandes voltam cortadas. Peça menos itens ou filtre por período, tipo ou agente.
 - Pelo chat, uma campanha aceita até 500 contatos. Para listas maiores, importe a planilha em **Campanhas**, no painel.
+- Um dashboard mostra os últimos 7 dias, como no painel. Peça outro período se precisar.
 
 ## Problemas comuns
 
@@ -109,8 +145,11 @@ Cada conexão vale para uma organização. Para trabalhar com outra, desconecte 
   <Accordion title="O assistente mostra dados da organização errada">
     A conexão usa a organização escolhida na hora de conectar. Desconecte em **Ajustes** > **Aplicativos conectados** e conecte de novo escolhendo a organização certa.
   </Accordion>
+  <Accordion title="O assistente diz que o rascunho mudou">
+    Alguém editou o agente no painel enquanto o assistente gravava. Peça para ele ler o agente de novo e refazer a mudança.
+  </Accordion>
 </AccordionGroup>
 
 ## Privacidade
 
-Para responder às suas perguntas, os dados que o assistente lê (resultados, ligações, conversas e campanhas) vão para o Claude ou para o ChatGPT, conforme o que você usa.
+Para responder às suas perguntas, os dados que o assistente lê (resultados, ligações, conversas, agentes e campanhas) vão para o Claude ou para o ChatGPT, conforme o que você usa.
