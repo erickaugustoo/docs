@@ -1,0 +1,171 @@
+---
+title: "Servidor MCP"
+description: "Endereço, login, permissões e ferramentas do servidor MCP da Integra, com o passo a passo para o Claude Code."
+---
+
+A Integra tem um servidor MCP (Model Context Protocol). Por ele, o Claude, o Claude Code e o ChatGPT consultam a sua operação e fazem ações na sua conta com o seu login, só na organização que você escolher ao conectar.
+
+Para usar no Claude ou no ChatGPT, siga [Claude e ChatGPT](/assistentes-de-ia). Esta página mostra como conectar o Claude Code e reúne os detalhes técnicos do servidor.
+
+## Dados do servidor
+
+| Item | Valor |
+| --- | --- |
+| Endereço | `https://mcp.useintegra.com.br/mcp` (sem barra no final) |
+| Transporte | Streamable HTTP |
+| Login | OAuth 2.1 com PKCE, na mesma conta do painel |
+| Aplicativos aceitos | Claude, Claude Code e ChatGPT |
+| Token de acesso | Vale 1 hora, e o aplicativo renova sozinho |
+| Conexão sem uso | Depois de 30 dias parada, é preciso entrar de novo |
+
+<Note>
+  Outros clientes MCP ainda não conseguem se conectar: o servidor só aceita os aplicativos do Claude e do ChatGPT.
+</Note>
+
+## Conectar no Claude Code
+
+<Steps>
+  <Step title="Adicione o servidor">
+    No terminal, rode:
+
+    ```bash
+    claude mcp add --transport http integra https://mcp.useintegra.com.br/mcp
+    ```
+
+    Assim a Integra fica disponível só para você, no projeto atual. Para ter a Integra em todos os seus projetos, use `--scope user`:
+
+    ```bash
+    claude mcp add --transport http --scope user integra https://mcp.useintegra.com.br/mcp
+    ```
+  </Step>
+  <Step title="Entre na Integra">
+    No Claude Code, rode `/mcp`, escolha **integra** e depois **Authenticate**. O navegador abre o login da Integra. Use a mesma conta do painel.
+  </Step>
+  <Step title="Escolha a organização">
+    Confira as permissões, escolha a organização e clique em **Permitir**. De volta ao Claude Code, as ferramentas aparecem com o prefixo `mcp__integra__`, como `mcp__integra__resumo_da_operacao`.
+  </Step>
+</Steps>
+
+### Para a equipe toda
+
+Com `--scope project`, o Claude Code grava o servidor no `.mcp.json` do repositório. Quem abrir o projeto vê a Integra na lista e entra com a própria conta:
+
+```json .mcp.json
+{
+  "mcpServers": {
+    "integra": {
+      "type": "http",
+      "url": "https://mcp.useintegra.com.br/mcp"
+    }
+  }
+}
+```
+
+<Tip>
+  O Claude Code pede confirmação antes de cada ferramenta. Para pular a confirmação só nas consultas, coloque as ferramentas de consulta em `permissions.allow` no `.claude/settings.json`, uma por uma (por exemplo, `mcp__integra__buscar_historico`). As que criam, publicam ou enviam continuam pedindo confirmação.
+</Tip>
+
+<Note>
+  No Claude e no Claude Code, o servidor não dispara ligações: `criar_campanha` aceita só WhatsApp, e `retentar_falhas` e `ligar_para_testar_agente` não aparecem. As campanhas de voz, a repetição de falhas e o teste por ligação ficam no ChatGPT e no painel.
+</Note>
+
+## Permissões
+
+Cada grupo de ferramentas depende de um escopo OAuth. A tela de conexão mostra os escopos pedidos antes de você clicar em **Permitir**.
+
+| Escopo | O que libera |
+| --- | --- |
+| `integra:read` | As 24 ferramentas de consulta |
+| `integra:campaigns` | Criar e cancelar campanhas e repetir as falhas |
+| `integra:agents` | Criar, configurar, publicar, ativar e desativar agentes, vincular números e ligar para testar |
+| `integra:inbox` | Assumir, devolver e responder conversas do Inbox |
+
+Se o aplicativo não pedir nenhum desses escopos, a conexão recebe os quatro. O seu papel na organização continua valendo: o que você não pode fazer no painel, o servidor também não faz.
+
+## Ferramentas
+
+As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o link da tela correspondente no painel.
+
+### Consulta (`integra:read`)
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `minha_conta` | Quem está conectado, a organização, o papel e os projetos |
+| `resumo_da_operacao` | Indicadores do período, os últimos 7 dias e o que está em andamento agora |
+| `saldo_e_limites` | Saldo de créditos e limites do plano, com o uso atual |
+| `buscar_historico` | Ligações e conversas de texto com o desfecho e os créditos, com filtro por período, tipo e agente |
+| `ver_ligacao` | Resumo, resultado, intenção, sentimento, duração e custo de uma ligação. A transcrição vem só com `incluirTranscricao` |
+| `ver_conversa_de_texto` | Resumo, avaliação, intenção, sentimento, satisfação e transcrição de uma conversa de texto encerrada |
+| `listar_agentes` | Agentes de voz e de texto, com o estado de cada um |
+| `ver_agente` | Canais, modelo, números, ferramentas e bases de um agente, com a versão do rascunho |
+| `desempenho_dos_agentes` | Atendimentos, duração e desfechos de cada agente no período |
+| `listar_campanhas` | Campanhas de voz e de WhatsApp, com o status e as contagens |
+| `ver_campanha` | Detalhe de uma campanha e uma página dos destinatários |
+| `listar_templates_do_whatsapp` | Templates de WhatsApp e o status de aprovação de cada um |
+| `listar_conversas` | Conversas do Inbox (WhatsApp, Instagram e Messenger) e quem atende cada uma |
+| `ver_mensagens` | Mensagens de uma conversa do Inbox, das mais recentes para as mais antigas |
+| `listar_metricas` | Catálogo das métricas e dimensões |
+| `consultar_metricas` | Consulta as métricas do catálogo, com período, agrupamento e filtros |
+| `listar_dashboards` | Dashboards salvos na organização |
+| `ver_dashboard` | Os números de um dashboard, peça por peça. Sem período, mostra os últimos 7 dias, como o painel |
+| `listar_vozes` | Vozes para os agentes de voz, com gênero e idioma |
+| `listar_modelos` | Modelos de voz e de texto para os agentes |
+| `listar_ferramentas` | Ferramentas cadastradas na organização (integrações e chamadas HTTP) |
+| `listar_bases` | Bases de conhecimento e quantos documentos cada uma tem |
+| `perguntar_a_base` | Os trechos que uma base de conhecimento devolve para uma pergunta |
+| `listar_numeros` | Números de telefone e os agentes que atendem cada um |
+
+### Campanhas (`integra:campaigns`)
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `criar_campanha` | Cria uma campanha de voz ou de WhatsApp para até 500 contatos. As ligações e mensagens vão para pessoas reais e gastam créditos |
+| `cancelar_campanha` | Cancela uma campanha. Cancelar não tem volta |
+| `retentar_falhas` | Liga de novo ou reenvia para os destinatários que falharam numa campanha. Gasta créditos |
+
+### Agentes (`integra:agents`)
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `criar_agente` | Cria um agente de voz ou de texto. Ele só atende depois de configurado e publicado |
+| `editar_instrucoes_do_agente` | Grava novas instruções no rascunho do agente |
+| `editar_configuracao_do_agente` | Troca a voz, o modelo, as ferramentas, as bases ou a primeira fala no rascunho |
+| `publicar_agente` | Publica o rascunho. As mudanças passam a valer nas próximas ligações e conversas |
+| `ativar_ou_desativar_agente` | Liga ou desliga um agente. Desligado, ele para de atender ligações e conversas novas |
+| `vincular_numero_ao_agente` | Coloca o agente para atender um número, junto com os que já atendem |
+| `ligar_para_testar_agente` | O agente liga para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. Gasta créditos |
+
+### Inbox (`integra:inbox`)
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `assumir_ou_devolver_conversa` | Passa a conversa para a equipe (a IA para de responder) ou devolve para a IA |
+| `responder_conversa` | Manda uma mensagem de texto numa conversa, em nome da equipe. A mensagem não tem volta |
+
+## Como as ações se comportam
+
+As edições de agente vão para o rascunho e só valem depois de `publicar_agente`. Passe a `versao` que o `ver_agente` mostra: se alguém mudou o rascunho no painel nesse meio tempo, a ferramenta não grava e pede para ler o agente de novo.
+
+Pedidos repetidos não executam duas vezes. A mesma `criar_campanha` ou `retentar_falhas` no mesmo dia devolve o que já foi feito. A mesma `criar_agente`, `ligar_para_testar_agente` ou `responder_conversa` em até 2 minutos não acontece de novo.
+
+Listas muito grandes voltam cortadas, com um aviso e a quantidade de itens que ficaram de fora. Peça menos itens ou use os filtros.
+
+Os erros voltam em português, prontos para mostrar a quem está usando: falta de permissão do papel, item que não existe na organização, limite do plano ou muitas chamadas seguidas.
+
+## Desconectar e trocar de organização
+
+No painel, abra **Ajustes** > **Aplicativos conectados** e clique em **Desconectar**. O aplicativo perde o acesso na hora.
+
+Cada conexão vale para uma organização. Para trabalhar com outra, desconecte e conecte de novo escolhendo a outra organização. No Claude Code, rode `/mcp`, escolha **integra** e entre de novo.
+
+Se uma ferramenta responder "Esta conexão perdeu o acesso à organização", você saiu da organização ou o seu acesso mudou. Conecte de novo.
+
+## Para quem desenvolve um cliente MCP
+
+O servidor segue a especificação de autorização do MCP:
+
+- recurso protegido: `https://mcp.useintegra.com.br/.well-known/oauth-protected-resource/mcp`
+- servidor de autorização: `https://mcp.useintegra.com.br/.well-known/oauth-authorization-server`
+- o cliente se identifica por um documento de metadados (Client ID Metadata Document); não há registro dinâmico
+- PKCE com `S256` é obrigatório, e o parâmetro `resource`, quando enviado, tem de ser `https://mcp.useintegra.com.br/mcp`
+- sem token válido, o `/mcp` responde `401` com o cabeçalho `WWW-Authenticate` apontando para os metadados
