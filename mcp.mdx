@@ -108,7 +108,7 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 | `consultar_metricas` | Consulta as métricas do catálogo, com período, agrupamento e filtros |
 | `listar_dashboards` | Dashboards salvos na organização |
 | `ver_dashboard` | Os números de um dashboard, peça por peça. Sem período, mostra os últimos 7 dias, como o painel |
-| `listar_vozes` | Vozes para os agentes de voz, com gênero e idioma |
+| `listar_vozes` | Vozes para os agentes de voz, com nome, idioma e etiquetas |
 | `listar_modelos` | Modelos de voz e de texto para os agentes |
 | `listar_ferramentas` | Ferramentas cadastradas na organização (integrações e chamadas HTTP) |
 | `listar_bases` | Bases de conhecimento e quantos documentos cada uma tem |
@@ -148,7 +148,7 @@ As edições de agente vão para o rascunho e só valem depois de `publicar_agen
 
 Pedidos repetidos não executam duas vezes. A mesma `criar_campanha` ou `retentar_falhas` no mesmo dia devolve o que já foi feito. A mesma `criar_agente`, `ligar_para_testar_agente` ou `responder_conversa` em até 2 minutos não acontece de novo.
 
-Listas muito grandes voltam cortadas, com um aviso e a quantidade de itens que ficaram de fora. Peça menos itens ou use os filtros.
+Respostas muito grandes voltam cortadas, com um aviso. Nas listas, o campo `itensOmitidos` diz quantos itens ficaram de fora. Peça menos itens ou use os filtros.
 
 Os erros voltam em português, prontos para mostrar a quem está usando: falta de permissão do papel, item que não existe na organização, limite do plano ou muitas chamadas seguidas.
 
