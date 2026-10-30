@@ -2,3 +2,15 @@
 title: "Atualizar webhook"
 openapi: "PATCH /api/v1/webhooks/{id}"
 ---
+
+Todos os campos são opcionais. Envie só o que vai mudar.
+
+Os tetos são os mesmos da [criação](/api-reference/endpoint/create-webhook): `url` HTTPS com até 2048 caracteres, sem `localhost` nem rede privada, e `events` com 1 a 3 itens de até 64 caracteres cada, entre `call.completed`, `campaign.started` e `campaign.completed`.
+
+## Erros
+
+| Status | Quando acontece |
+|--------|-----------------|
+| `400` | Campo inválido ou acima do teto, evento fora da lista, ou URL que não é HTTPS ou que aponta para rede privada |
+| `404` | Webhook não encontrado na sua organização |
+| `413` | Corpo da requisição acima de 1 MB |

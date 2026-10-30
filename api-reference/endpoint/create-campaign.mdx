@@ -16,7 +16,7 @@ O campo `channel` decide o tipo de campanha. Ele é opcional e vale `voice` quan
 Os campos comuns aos dois canais são `name`, `project_id`, `scheduled_at` e `recipients`.
 
 <Note>
-  No canal `voice`, `scheduled_at` precisa ser no futuro. No canal `whatsapp`, uma data no passado é aceita e dispara no próximo ciclo do worker — é assim que você agenda um "enviar agora".
+  No canal `voice`, `scheduled_at` precisa ser no futuro. No canal `whatsapp`, uma data no passado é aceita e dispara no próximo ciclo do worker: é assim que você agenda um "enviar agora".
 </Note>
 
 <Warning>
@@ -37,10 +37,12 @@ O corpo do template usa marcadores numerados: `Oi {{1}}, seu horário é {{2}}`.
 }
 ```
 
-A chave `"n"` preenche o `{{n}}` do corpo. O que vale é a posição, não o nome: chaves como `leadName` só são aceitas no canal `voice`.
+A chave `"n"` preenche o `{{n}}` do corpo. O que vale é a posição.
+
+Chaves com nome, como `leadName` ou `empresa`, também são aceitas no WhatsApp, mas não entram na mensagem: são dados do contato para o agente de texto que atende quem responder, como no canal `voice`. Para escolher esse agente, envie `agent_id` com o id de um agente de texto; sem ele, vale o agente ligado ao template.
 
 <Warning>
-  A quantidade de variáveis de **cada** destinatário tem que bater com o número de `{{n}}` do corpo. Faltando ou sobrando, a campanha inteira é recusada com `422` antes de qualquer disparo — nenhuma mensagem é enviada. Confira o corpo do template no painel, em **Templates**.
+  A quantidade de chaves numéricas de **cada** destinatário tem que bater com o número de `{{n}}` do corpo. Faltando ou sobrando, a campanha inteira é recusada com `422` antes de qualquer disparo, e nenhuma mensagem é enviada. Confira o corpo do template no painel, em **Templates**.
 </Warning>
 
 ### Antes de criar
@@ -129,12 +131,12 @@ curl -X POST https://api.useintegra.com.br/api/v1/campaigns \
 | Campo | Teto |
 |-------|------|
 | `name` | 200 caracteres |
-| `project_id`, `agent_id`, `phone_number_id` | 64 caracteres |
+| `project_id`, `agent_id`, `phone_number_id`, `scheduled_at` | 64 caracteres |
 | `template_name` | 512 caracteres |
 | `meta_phone_external_id` | 100 caracteres |
-| `recipients` | 10.000 destinatários |
+| `recipients` | 10.000 destinatários. Acima disso, a requisição volta com `400` sem validar os destinatários um a um |
 | `recipient_name` | 200 caracteres |
-| `dynamic_variables` | 50 chaves por destinatário; cada chave com até 100 caracteres e cada valor com até 1.000 |
+| `dynamic_variables` | 50 chaves por destinatário; cada chave com até 100 caracteres e cada valor com até 1.000. Acima de 50 chaves, a requisição volta com `400` sem validar as chaves uma a uma |
 | Corpo inteiro da requisição | 10 MB |
 
 <Note>
@@ -145,7 +147,7 @@ curl -X POST https://api.useintegra.com.br/api/v1/campaigns \
 
 | Status | Quando acontece | O que fazer |
 |--------|-----------------|-------------|
-| `400` | Payload inválido: campo obrigatório do canal ausente, `scheduled_at` fora do ISO 8601 (ou, no canal `voice`, sem fuso), mais de 10.000 destinatários, campo acima do teto, telefone fora do E.164 | Corrija o corpo. A mensagem aponta o campo |
+| `400` | Payload inválido: campo obrigatório do canal ausente, `scheduled_at` fora do ISO 8601 (ou, no canal `voice`, sem fuso), mais de 10.000 destinatários, campo acima do teto, telefone fora do E.164 | Corrija o corpo. A mensagem aponta o campo; com muitos erros, ela traz os 10 primeiros e termina com `(and N more errors)` |
 | `403` | A chave não tem o escopo que a rota exige (`Insufficient scope`), ou, no canal `voice`, o plano atingiu o teto mensal de ligações (`Monthly call limit reached (N/M)`) | Use uma chave com o escopo certo. No teto do plano, faça upgrade ou aguarde a virada do mês |
 | `404` | Projeto ou template não encontrado na sua organização | Confira `project_id` e `template_name` no painel |
 | `413` | Corpo da requisição acima de 10 MB (`Request body too large (max 10 MB)`). Nada é processado | Divida a lista em mais de uma campanha (veja **Limites**) |
@@ -154,7 +156,7 @@ curl -X POST https://api.useintegra.com.br/api/v1/campaigns \
 | `503` | Canal `whatsapp`: integração de WhatsApp não configurada na sua organização | Conecte um número de WhatsApp no painel |
 | `503` | Canal `voice`: não foi possível confirmar o teto mensal de ligações do plano (`Could not verify the plan's monthly call limit. Try again later.`). Nada é criado | Repita em alguns segundos, com espera crescente entre as tentativas |
 
-### 422 — variáveis que não batem com o corpo
+### 422: variáveis que não batem com o corpo
 
 A validação roda sobre a lista inteira e para no primeiro destinatário irregular. A mensagem diz quantas variáveis o corpo exige e qual número está errado:
 
@@ -164,7 +166,7 @@ A validação roda sobre a lista inteira e para no primeiro destinatário irregu
 }
 ```
 
-### 422 — quota de conversas excedida
+### 422: quota de conversas excedida
 
 ```json
 {

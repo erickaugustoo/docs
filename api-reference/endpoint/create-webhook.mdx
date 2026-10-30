@@ -2,3 +2,25 @@
 title: "Criar webhook"
 openapi: "POST /api/v1/webhooks"
 ---
+
+## Limites
+
+| Campo | Regra |
+|-------|-------|
+| `name` | De 1 a 100 caracteres |
+| `url` | HTTPS, até 2048 caracteres. Não aceita `localhost` nem endereço de rede privada |
+| `events` | De 1 a 3 itens, cada um com até 64 caracteres. Os eventos aceitos são `call.completed`, `campaign.started` e `campaign.completed` |
+| Corpo inteiro da requisição | 1 MB |
+
+Cada organização tem no máximo 10 webhooks.
+
+## Erros
+
+| Status | Quando acontece |
+|--------|-----------------|
+| `400` | Campo inválido ou acima do teto, evento fora da lista, URL que não é HTTPS ou que aponta para rede privada, ou a organização já tem 10 webhooks |
+| `413` | Corpo da requisição acima de 1 MB |
+
+<Note>
+  Uma lista de `events` com mais de 3 itens é recusada pelo tamanho, sem validar item por item. Quando o corpo tem vários erros, a mensagem do `400` traz os 10 primeiros e diz quantos ficaram de fora, no formato `(and N more errors)`.
+</Note>
