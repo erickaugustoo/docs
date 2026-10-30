@@ -3,7 +3,7 @@
   "info": {
     "title": "Integra BFI API",
     "version": "1.0.0",
-    "description": "<img src=\"/public/logo_dark.webp\" alt=\"Integra\" height=\"36\" style=\"margin-bottom:16px\" />\n\nAPI pública da plataforma Integra para integrações externas.\n\n> [!tip]\n> **Copie a documentação completa para sua IA favorita:**\n> [Abrir página de cópia](/docs/markdown) ou baixe o [llm.txt](/llm.txt)\n\n---\n\n## Como começar\n\n### 1. Gerar sua API Key\n\nAcesse o painel da Integra em **Settings > API Keys** e clique em **Nova API Key**.\n\n> [!important]\n> Copie a key gerada (`ik_live_...`) imediatamente — ela **só será exibida uma vez**.\n\n### 2. Autenticar requests\n\nEnvie o header `Authorization` em todas as chamadas:\n\n```\nAuthorization: Bearer ik_live_sua_key_aqui\n```\n\n### 3. Fazer sua primeira chamada\n\n```bash\ncurl -H \"Authorization: Bearer ik_live_xxx\" \\\n  https://api.useintegra.com.br/api/v1/campaigns\n```\n\n> [!success]\n> Se a resposta for `200 OK` com JSON, sua integração está funcionando!\n\n---\n\n## Rate Limiting\n\n| Header | Descrição |\n|--------|-----------|\n| `X-RateLimit-Limit` | Limite total (60/min) |\n| `X-RateLimit-Remaining` | Requests restantes |\n| `X-RateLimit-Reset` | Timestamp de reset (epoch) |\n\n> [!warning]\n> Ao exceder **60 requests/minuto** por API Key, a API retorna status `429 Too Many Requests`.\n\n---\n\n## Erros comuns\n\n| Status | Erro | Causa |\n|--------|------|-------|\n| `401` | Invalid API key | Key inválida ou revogada |\n| `403` | Forbidden | Key sem permissão para o recurso |\n| `429` | Rate limit exceeded | Excedeu 60 req/min |\n| `500` | Internal server error | Erro interno — contate suporte |\n"
+    "description": "<img src=\"/public/logo_dark.webp\" alt=\"Integra\" height=\"36\" style=\"margin-bottom:16px\" />\n\nA API da Integra para integrações externas.\n\n> [!tip]\n> **Copie a documentação completa para sua IA favorita:**\n> [Abrir página de cópia](/docs/markdown) ou baixe o [llm.txt](/llm.txt)\n\n---\n\n## Como começar\n\n### 1. Gerar sua API Key\n\nAcesse o painel da Integra em **Settings > API Keys** e clique em **Nova API Key**.\n\n> [!important]\n> Copie a key gerada (`ik_live_...`) imediatamente: ela **só será exibida uma vez**.\n\n### 2. Autenticar requests\n\nEnvie o header `Authorization` em todas as chamadas:\n\n```\nAuthorization: Bearer ik_live_sua_key_aqui\n```\n\n### 3. Fazer sua primeira chamada\n\n```bash\ncurl -H \"Authorization: Bearer ik_live_xxx\" \\\n  https://api.useintegra.com.br/api/v1/campaigns\n```\n\n> [!success]\n> Se a resposta for `200 OK` com JSON, sua integração está funcionando!\n\n---\n\n## Rate Limiting\n\n| Header | Descrição |\n|--------|-----------|\n| `X-RateLimit-Limit` | Limite total (60/min) |\n| `X-RateLimit-Remaining` | Requests restantes |\n| `X-RateLimit-Reset` | Timestamp de reset (epoch) |\n\n> [!warning]\n> Ao exceder **60 requests/minuto** por API Key, a API retorna status `429 Too Many Requests`.\n\n---\n\n## Erros comuns\n\n| Status | Erro | Causa |\n|--------|------|-------|\n| `401` | Invalid API key | Key inválida ou revogada |\n| `403` | Forbidden | Key sem permissão para o recurso |\n| `429` | Rate limit exceeded | Excedeu 60 req/min |\n| `500` | Internal server error | Erro interno, contate o suporte |\n"
   },
   "tags": [
     {
@@ -204,7 +204,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Página (default: 1)"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -213,7 +213,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por página (default: 20, max: 100)"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -465,10 +465,12 @@
                   "name": {
                     "type": "string",
                     "minLength": 1,
+                    "maxLength": 200,
                     "example": "Campanha Março 2026"
                   },
                   "project_id": {
                     "type": "string",
+                    "maxLength": 64,
                     "description": "Project ID (copy from Panel → project header)",
                     "example": "b9c80a57-fad2-41a0-a304-727337ad1b1f"
                   },
@@ -484,28 +486,33 @@
                   },
                   "agent_id": {
                     "type": "string",
-                    "description": "Agent ID (copy from Panel → agent card). Required for voice campaigns",
+                    "maxLength": 64,
+                    "description": "Agent ID (copy from Panel → agent card). Required for voice campaigns (voice agent). Optional for WhatsApp: the text agent that answers whoever replies (overrides the agent linked to the template)",
                     "example": "7e09d093-904a-48de-ac49-b0445906c38e"
                   },
                   "phone_number_id": {
                     "type": "string",
+                    "maxLength": 64,
                     "description": "Phone number ID assigned to the agent. Required for voice campaigns",
                     "example": "d1082e49-1b2c-4337-81e2-8eb74810351d"
                   },
                   "template_name": {
                     "type": "string",
+                    "maxLength": 512,
                     "description": "Approved WhatsApp template name. Required for whatsapp campaigns",
                     "example": "boas_vindas_pt_br"
                   },
                   "meta_phone_external_id": {
                     "type": "string",
+                    "maxLength": 100,
                     "description": "Meta phone number ID used as sender. Optional when the organization has a single WhatsApp number",
                     "example": "109876543210987"
                   },
                   "scheduled_at": {
                     "type": "string",
-                    "description": "ISO 8601 datetime with timezone (e.g. 2026-03-24T14:00:00Z)",
-                    "example": "2026-03-25T14:00:00Z"
+                    "maxLength": 64,
+                    "description": "ISO 8601 date-time with timezone offset (Z, -0300 or -03:00). Voice campaigns REQUIRE date, time and offset (400 without them), dial at this instant and are returned in São Paulo time (-03:00). WhatsApp campaigns read a value without offset as UTC and are returned in UTC (Z)",
+                    "example": "2026-03-25T14:00:00-03:00"
                   },
                   "recipients": {
                     "type": "array",
@@ -519,6 +526,7 @@
                         },
                         "recipient_name": {
                           "type": "string",
+                          "maxLength": 200,
                           "example": "João Silva"
                         },
                         "dynamic_variables": {
@@ -527,7 +535,7 @@
                             "type": "string",
                             "maxLength": 1000
                           },
-                          "description": "Key-value pairs for template variables. Voice campaigns accept free-form names used in the agent prompt (e.g. leadName for {{leadName}}). WhatsApp campaigns REQUIRE numeric keys (\"1\", \"2\", ...) because WhatsApp template parameters are positional ({{1}}, {{2}}) — named keys are rejected with 400",
+                          "description": "Key-value pairs for template variables (max 50 keys of up to 100 characters; values up to 1000). Voice campaigns accept free-form names used in the agent prompt (e.g. leadName for {{leadName}}). WhatsApp campaigns: numeric keys (\"1\", \"2\", ...) are the positional template parameters ({{1}}, {{2}}); named keys (e.g. leadName, empresa, email) are contact data for the text agent that answers, the same logic as voice (they go to the agent prompt, never to the message)",
                           "example": {
                             "1": "João",
                             "2": "Acme Corp"
@@ -596,6 +604,16 @@
         "responses": {
           "201": {
             "description": "Campanha criada",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                },
+                "required": true
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -690,7 +708,7 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "Bad Request: campo inválido ou JSON malformado no corpo da requisição",
             "content": {
               "application/json": {
                 "schema": {
@@ -725,8 +743,44 @@
               }
             }
           },
+          "403": {
+            "description": "Limite mensal de ligações do plano atingido (canal voice)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
           "404": {
             "description": "Projeto ou template não encontrado (canal whatsapp)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Corpo da requisição acima do teto de 10 MB (a lista de destinatários é grande demais)",
             "content": {
               "application/json": {
                 "schema": {
@@ -762,7 +816,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicação com o serviço de WhatsApp. ATENÇÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada — a criação pode ter sido concluída do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir às cegas duplica o disparo para toda a lista",
+            "description": "Falha na comunicação com o serviço de WhatsApp. ATENÇÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada: a criação pode ter sido concluída do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir às cegas duplica o disparo para toda a lista",
             "content": {
               "application/json": {
                 "schema": {
@@ -780,7 +834,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponível (integração não configurada)",
+            "description": "Canal whatsapp indisponível (integração não configurada) ou, no canal voice, o limite do plano não pôde ser verificado. Nada é criado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -1202,6 +1256,16 @@
         "responses": {
           "200": {
             "description": "Campanha cancelada",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                },
+                "required": true
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1326,6 +1390,16 @@
         "responses": {
           "200": {
             "description": "Retentativa iniciada",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                },
+                "required": true
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -1356,6 +1430,24 @@
           },
           "400": {
             "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Limite mensal de ligações do plano atingido (canal voice)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1409,7 +1501,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponível (integração não configurada)",
+            "description": "Canal whatsapp indisponível (integração não configurada) ou, no canal voice, o limite do plano não pôde ser verificado. Nada é reenfileirado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -1444,7 +1536,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Página (default: 1)"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -1453,7 +1545,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por página (default: 20, max: 100)"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -1493,7 +1585,7 @@
             "schema": {
               "type": "string",
               "format": "date-time",
-              "description": "Data início (ISO 8601)"
+              "description": "Data início (ISO 8601 com fuso, ex: 2026-10-01T00:00:00-03:00)"
             },
             "required": false,
             "name": "from",
@@ -1503,7 +1595,7 @@
             "schema": {
               "type": "string",
               "format": "date-time",
-              "description": "Data fim (ISO 8601)"
+              "description": "Data fim (ISO 8601 com fuso, ex: 2026-10-01T23:59:59-03:00)"
             },
             "required": false,
             "name": "to",
@@ -1633,6 +1725,24 @@
                   "required": [
                     "calls",
                     "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro inválido (status, direction, from, to), page ou limit que não é inteiro, ou page acima do máximo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
@@ -1935,14 +2045,21 @@
                   },
                   "url": {
                     "type": "string",
+                    "maxLength": 2048,
                     "format": "uri"
                   },
                   "events": {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "maxLength": 64
                     },
-                    "minItems": 1
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "description": "Eventos assinados (1 a 3): call.completed, campaign.started, campaign.completed",
+                    "example": [
+                      "call.completed"
+                    ]
                   }
                 },
                 "required": [
@@ -1957,6 +2074,16 @@
         "responses": {
           "201": {
             "description": "Webhook criado. O secret só é exibido uma vez.",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                },
+                "required": true
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2001,7 +2128,25 @@
             }
           },
           "400": {
-            "description": "Bad Request",
+            "description": "Bad Request: campo inválido ou JSON malformado no corpo da requisição",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Corpo da requisição acima do teto de 1 MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -2189,14 +2334,21 @@
                   },
                   "url": {
                     "type": "string",
+                    "maxLength": 2048,
                     "format": "uri"
                   },
                   "events": {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "maxLength": 64
                     },
-                    "minItems": 1
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "description": "Eventos assinados (1 a 3): call.completed, campaign.started, campaign.completed",
+                    "example": [
+                      "call.completed"
+                    ]
                   },
                   "is_active": {
                     "type": "boolean"
@@ -2209,6 +2361,16 @@
         "responses": {
           "200": {
             "description": "Webhook atualizado",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                },
+                "required": true
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2269,6 +2431,24 @@
                 }
               }
             }
+          },
+          "413": {
+            "description": "Corpo da requisição acima do teto de 1 MB",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
           }
         }
       },
@@ -2296,6 +2476,16 @@
         "responses": {
           "200": {
             "description": "Webhook excluído",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                },
+                "required": true
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -2357,7 +2547,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Página (default: 1)"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -2366,7 +2556,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por página (default: 20, max: 100)"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -2474,6 +2664,24 @@
                   "required": [
                     "deliveries",
                     "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "page ou limit que não é inteiro, ou page acima do máximo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
                   ]
                 }
               }
