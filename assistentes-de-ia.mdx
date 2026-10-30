@@ -30,8 +30,8 @@ https://mcp.useintegra.com.br/mcp
       <Step title="Entre na Integra">
         Clique em **Conectar**. O Claude abre a página de login da Integra; use a mesma conta do painel.
       </Step>
-      <Step title="Escolha a organização">
-        Confira as permissões, escolha a organização e clique em **Permitir**.
+      <Step title="Escolha as permissões e a organização">
+        Desmarque as permissões que não quer liberar, escolha a organização e clique em **Permitir**.
       </Step>
     </Steps>
   </Tab>
@@ -44,7 +44,7 @@ https://mcp.useintegra.com.br/mcp
         Nas configurações do ChatGPT, adicione um conector personalizado com o endereço acima e escolha autenticação OAuth.
       </Step>
       <Step title="Entre na Integra e escolha a organização">
-        O ChatGPT abre a página de login da Integra. Entre com a sua conta, escolha a organização e clique em **Permitir**.
+        O ChatGPT abre a página de login da Integra. Entre com a sua conta, desmarque as permissões que não quer liberar, escolha a organização e clique em **Permitir**.
       </Step>
     </Steps>
   </Tab>
@@ -62,21 +62,25 @@ https://mcp.useintegra.com.br/mcp
 - "Cria um agente de texto chamado Atendimento."
 - "Tem conversa no Inbox esperando alguém da equipe?"
 - "Cancela a campanha Reativação de outubro."
+- "Quais números de WhatsApp a gente tem conectados?"
+- "Deixa a agenda marcar reuniões só de segunda a sexta, das 9h às 18h."
 
 ## O que o assistente consegue ver
 
 Sem alterar nada, ele consulta:
 
-- o resumo da operação, o saldo de créditos e os limites do plano;
+- o resumo da operação e os limites do plano, com o uso de cada um;
 - o histórico de ligações e de conversas de texto, com o desfecho de cada uma;
 - o detalhe de uma ligação (resumo, resultado, intenção e sentimento; a transcrição só quando você pede) ou de uma conversa de texto;
 - os agentes, a configuração de cada um e o desempenho;
 - as vozes e os modelos que dá para usar nos agentes;
 - as ferramentas e as bases de conhecimento da organização, inclusive os trechos que uma base devolve para uma pergunta;
 - os números de telefone e os agentes que atendem cada um;
-- as campanhas, os destinatários e os templates do WhatsApp;
+- as campanhas, os destinatários, os templates e os números de WhatsApp conectados;
 - as conversas do Inbox e as mensagens de cada uma;
 - as métricas e os dashboards salvos.
+
+O assistente não mostra créditos, custo nem saldo. Para acompanhar o consumo, use o painel.
 
 ## O que o assistente consegue fazer
 
@@ -89,6 +93,7 @@ Cada grupo de ações depende de uma permissão, que você vê na tela de conex�
     - Publicar o rascunho.
     - Ativar e desativar um agente.
     - Colocar um agente para atender um número.
+    - Definir os dias e horários em que os agentes podem marcar e remarcar reuniões no Google Agenda.
     - Ligar para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. O teste gasta créditos.
   </Accordion>
   <Accordion title="Campanhas">
@@ -112,12 +117,14 @@ Cada grupo de ações depende de uma permissão, que você vê na tela de conex�
 
 ## Permissões
 
-A tela de conexão mostra até quatro permissões:
+A tela de conexão mostra até quatro permissões, e você escolhe quais liberar:
 
-- Ver resultados, ligações, conversas, agentes, campanhas, métricas e configurações
+- Ver resultados, ligações, conversas, agentes, campanhas, métricas e configurações (sempre incluída)
 - Criar, cancelar e repetir campanhas (ligações e mensagens gastam créditos)
 - Criar, configurar, ativar, desativar e publicar agentes, vincular números e ligar para testar (o teste gasta créditos)
 - Assumir e responder conversas do Inbox (as mensagens vão para os seus contatos)
+
+A primeira vem sempre. As outras três vêm marcadas: desmarque as que não quiser dar, e o assistente fica sem as ações delas. Para mudar depois, desconecte e conecte de novo.
 
 No Claude e no Claude Code, as permissões de campanhas e de agentes aparecem sem as ligações.
 
@@ -127,6 +134,10 @@ O seu papel na organização continua valendo. O que você não pode fazer no pa
 
 No painel, abra **Ajustes** > **Aplicativos conectados** e clique em **Desconectar**. O assistente perde o acesso na hora. Desconecte também se suspeitar que alguém usou a sua conexão.
 
+Se você é administrador ou proprietário, a mesma tela mostra as **Conexões da organização**, com os aplicativos que cada membro conectou. Clique em **Revogar** para cortar o acesso de uma conexão na hora. A conexão de um proprietário só outro proprietário revoga.
+
+A conexão também cai sozinha quando a pessoa sai da organização ou troca a senha, e depois de 90 dias. Nesses casos, basta conectar de novo.
+
 Cada conexão vale para uma organização. Para trabalhar com outra, desconecte em **Ajustes** > **Aplicativos conectados** e conecte de novo escolhendo a outra organização.
 
 ## Limites
@@ -134,6 +145,7 @@ Cada conexão vale para uma organização. Para trabalhar com outra, desconecte 
 - Listas muito grandes voltam cortadas. Peça menos itens ou filtre por período, tipo ou agente.
 - Pelo chat, uma campanha aceita até 500 contatos. Para listas maiores, importe a planilha em **Campanhas**, no painel.
 - Um dashboard mostra os últimos 7 dias, como no painel. Peça outro período se precisar.
+- Cada conexão tem um limite de uso, como 5 campanhas por hora e 20 respostas do Inbox por minuto. Passando dele, nada é feito e o assistente diz quanto tempo esperar. A tabela completa está em [Servidor MCP](/servidor-mcp).
 
 ## Problemas comuns
 
@@ -146,6 +158,9 @@ Cada conexão vale para uma organização. Para trabalhar com outra, desconecte 
   </Accordion>
   <Accordion title="O assistente mostra dados da organização errada">
     A conexão usa a organização escolhida na hora de conectar. Desconecte em **Ajustes** > **Aplicativos conectados** e conecte de novo escolhendo a organização certa.
+  </Accordion>
+  <Accordion title="O assistente não consegue fazer uma ação">
+    A permissão dessa ação pode ter ficado desmarcada na conexão. Confira em **Ajustes** > **Aplicativos conectados** as permissões que você deu. Para liberar outra, desconecte e conecte de novo, marcando a permissão.
   </Accordion>
   <Accordion title="O assistente diz que o rascunho mudou">
     Alguém editou o agente no painel enquanto o assistente gravava. Peça para ele ler o agente de novo e refazer a mudança.

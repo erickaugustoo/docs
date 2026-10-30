@@ -17,6 +17,7 @@ Para usar no Claude ou no ChatGPT, siga [Claude e ChatGPT](/assistentes-de-ia). 
 | Aplicativos aceitos | Claude, Claude Code e ChatGPT |
 | Token de acesso | Vale 1 hora, e o aplicativo renova sozinho |
 | Conexão sem uso | Depois de 30 dias parada, é preciso entrar de novo |
+| Validade da conexão | 90 dias desde a conexão, mesmo em uso. Depois, é preciso conectar de novo |
 
 <Note>
   Outros clientes MCP ainda não conseguem se conectar: o servidor só aceita os aplicativos do Claude e do ChatGPT.
@@ -42,7 +43,7 @@ Para usar no Claude ou no ChatGPT, siga [Claude e ChatGPT](/assistentes-de-ia). 
     No Claude Code, rode `/mcp`, escolha **integra** e depois **Authenticate**. O navegador abre o login da Integra. Use a mesma conta do painel.
   </Step>
   <Step title="Escolha a organização">
-    Confira as permissões, escolha a organização e clique em **Permitir**. De volta ao Claude Code, as ferramentas aparecem com o prefixo `mcp__integra__`, como `mcp__integra__resumo_da_operacao`.
+    Escolha as permissões que quer liberar e a organização, e clique em **Permitir**. De volta ao Claude Code, as ferramentas aparecem com o prefixo `mcp__integra__`, como `mcp__integra__resumo_da_operacao`.
   </Step>
 </Steps>
 
@@ -71,20 +72,22 @@ Com `--scope project`, o Claude Code grava o servidor no `.mcp.json` do reposit�
 
 ## Permissões
 
-Cada grupo de ferramentas depende de um escopo OAuth. A tela de conexão mostra os escopos pedidos antes de você clicar em **Permitir**.
+Cada grupo de ferramentas depende de um escopo OAuth. Na tela de conexão, você escolhe quais liberar antes de clicar em **Permitir**: a consulta (`integra:read`) vem sempre, e as outras vêm marcadas para você desmarcar o que não quiser. O aplicativo só recebe as ferramentas dos escopos liberados.
 
 | Escopo | O que libera |
 | --- | --- |
-| `integra:read` | As 24 ferramentas de consulta |
+| `integra:read` | As 25 ferramentas de consulta. Sempre incluído |
 | `integra:campaigns` | Criar e cancelar campanhas e repetir as falhas |
-| `integra:agents` | Criar, configurar, publicar, ativar e desativar agentes, vincular números e ligar para testar |
+| `integra:agents` | Criar, configurar, publicar, ativar e desativar agentes, vincular números, definir o horário da agenda e ligar para testar |
 | `integra:inbox` | Assumir, devolver e responder conversas do Inbox |
 
-Se o aplicativo não pedir nenhum desses escopos, a conexão recebe os quatro. O seu papel na organização continua valendo: o que você não pode fazer no painel, o servidor também não faz.
+A tela oferece os escopos que o aplicativo pediu; se ele não pedir nenhum, oferece os quatro. O seu papel na organização continua valendo: o que você não pode fazer no painel, o servidor também não faz.
 
 ## Ferramentas
 
-As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o link da tela correspondente no painel.
+São 38 ferramentas. No Claude e no Claude Code são 36, porque `retentar_falhas` e `ligar_para_testar_agente` não aparecem (veja a nota acima).
+
+As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o link da tela correspondente no painel. Nenhuma resposta mostra créditos, custo nem saldo: o consumo fica no painel.
 
 ### Consulta (`integra:read`)
 
@@ -92,25 +95,26 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 | --- | --- |
 | `minha_conta` | Quem está conectado, a organização, o papel e os projetos |
 | `resumo_da_operacao` | Indicadores do período, os últimos 7 dias e o que está em andamento agora |
-| `saldo_e_limites` | Saldo de créditos e limites do plano, com o uso atual |
-| `buscar_historico` | Ligações e conversas de texto com o desfecho e os créditos, com filtro por período, tipo e agente |
-| `ver_ligacao` | Resumo, resultado, intenção, sentimento, duração e custo de uma ligação. A transcrição vem só com `incluirTranscricao` |
+| `saldo_e_limites` | Limites do plano e o uso atual de cada um |
+| `buscar_historico` | Ligações e conversas de texto com o desfecho de cada uma, com filtro por período, tipo e agente |
+| `ver_ligacao` | Resumo, resultado, intenção, sentimento, emoções, duração e modelo de uma ligação. O que o contato falou (transcrição e comentário da pesquisa) vem só com `incluirTranscricao` |
 | `ver_conversa_de_texto` | Resumo, avaliação, intenção, sentimento, satisfação e transcrição de uma conversa de texto encerrada |
 | `listar_agentes` | Agentes de voz e de texto, com o estado de cada um |
-| `ver_agente` | Canais, modelo, números, ferramentas e bases de um agente, com a versão do rascunho |
+| `ver_agente` | Canais, modelo, números, ferramentas e bases de um agente, com a versão do rascunho. Na voz, mostra as variáveis do agente e quais são obrigatórias |
 | `desempenho_dos_agentes` | Atendimentos, duração e desfechos de cada agente no período |
 | `listar_campanhas` | Campanhas de voz e de WhatsApp, com o status e as contagens |
-| `ver_campanha` | Detalhe de uma campanha e uma página dos destinatários |
+| `ver_campanha` | Detalhe de uma campanha e uma página dos destinatários. Nas de WhatsApp, o número de origem vem em `canalId` |
 | `listar_templates_do_whatsapp` | Templates de WhatsApp e o status de aprovação de cada um |
-| `listar_conversas` | Conversas do Inbox (WhatsApp, Instagram e Messenger) e quem atende cada uma |
+| `listar_numeros_do_whatsapp` | Números de WhatsApp conectados na organização, com o `canalId` de cada um e o agente que atende |
+| `listar_conversas` | Conversas do Inbox (WhatsApp, Instagram e Messenger), quem atende cada uma e o número de origem em `canalId` |
 | `ver_mensagens` | Mensagens de uma conversa do Inbox, das mais recentes para as mais antigas |
 | `listar_metricas` | Catálogo das métricas e dimensões |
 | `consultar_metricas` | Consulta as métricas do catálogo, com período, agrupamento e filtros |
 | `listar_dashboards` | Dashboards salvos na organização |
 | `ver_dashboard` | Os números de um dashboard, peça por peça. Sem período, mostra os últimos 7 dias, como o painel |
-| `listar_vozes` | Vozes para os agentes de voz, com nome, idioma e etiquetas |
+| `listar_vozes` | Vozes para os agentes de voz, com nome, gênero, idioma e etiquetas |
 | `listar_modelos` | Modelos de voz e de texto para os agentes |
-| `listar_ferramentas` | Ferramentas cadastradas na organização (integrações e chamadas HTTP) |
+| `listar_ferramentas` | Ferramentas cadastradas na organização (integrações e chamadas HTTP). Nas do Google Agenda, mostra o horário em que os agentes podem marcar reuniões |
 | `listar_bases` | Bases de conhecimento e quantos documentos cada uma tem |
 | `perguntar_a_base` | Os trechos que uma base de conhecimento devolve para uma pergunta |
 | `listar_numeros` | Números de telefone e os agentes que atendem cada um |
@@ -119,7 +123,7 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 
 | Ferramenta | O que faz |
 | --- | --- |
-| `criar_campanha` | Cria uma campanha de voz ou de WhatsApp para até 500 contatos. As ligações e mensagens vão para pessoas reais e gastam créditos |
+| `criar_campanha` | Cria uma campanha de voz ou de WhatsApp para até 500 contatos. As ligações e mensagens vão para pessoas reais e gastam créditos. No WhatsApp, se a organização tem mais de um número, informe o `canalId` do número de origem (o `listar_numeros_do_whatsapp` mostra) |
 | `cancelar_campanha` | Cancela uma campanha. Cancelar não tem volta |
 | `retentar_falhas` | Liga de novo ou reenvia para os destinatários que falharam numa campanha. Gasta créditos |
 
@@ -133,6 +137,7 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 | `publicar_agente` | Publica o rascunho. As mudanças passam a valer nas próximas ligações e conversas |
 | `ativar_ou_desativar_agente` | Liga ou desliga um agente. Desligado, ele para de atender ligações e conversas novas |
 | `vincular_numero_ao_agente` | Coloca o agente para atender um número, junto com os que já atendem |
+| `definir_horario_da_agenda` | Define os dias e horários em que os agentes de voz e de texto podem marcar e remarcar reuniões no Google Agenda, em todas as ferramentas do Google Agenda da organização ou só nas de um projeto. Cancelar reunião nunca é barrado |
 | `ligar_para_testar_agente` | O agente liga para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. Gasta créditos |
 
 ### Inbox (`integra:inbox`)
@@ -152,9 +157,24 @@ Respostas muito grandes voltam cortadas, com um aviso. Nas listas, o campo `iten
 
 Os erros voltam em português, prontos para mostrar a quem está usando: falta de permissão do papel, item que não existe na organização, limite do plano ou muitas chamadas seguidas.
 
+### Limites por conexão
+
+| Ferramenta | Limite |
+| --- | --- |
+| Todas, somadas | 120 chamadas por minuto |
+| `responder_conversa` | 20 por minuto e 200 por hora |
+| `assumir_ou_devolver_conversa` | 30 por minuto |
+| `criar_campanha`, `retentar_falhas` e `ligar_para_testar_agente` | 5 por hora, cada uma |
+
+Passando do limite, a ferramenta não faz nada e responde quanto tempo falta para tentar de novo.
+
 ## Desconectar e trocar de organização
 
-No painel, abra **Ajustes** > **Aplicativos conectados** e clique em **Desconectar**. O aplicativo perde o acesso na hora.
+No painel, abra **Ajustes** > **Aplicativos conectados** e clique em **Desconectar**. O aplicativo perde o acesso na hora. A lista mostra cada aplicativo que você conectou, as permissões dadas, quando conectou e o último uso.
+
+Administradores e proprietários veem, na mesma tela, as **Conexões da organização**: os aplicativos que cada membro conectou. Lá, **Revogar** corta o acesso da conexão de qualquer membro na hora. A conexão de um proprietário só outro proprietário revoga.
+
+A conexão também cai sozinha quando a pessoa sai da organização, quando troca a senha e depois de 90 dias.
 
 Cada conexão vale para uma organização. Para trabalhar com outra, desconecte e conecte de novo escolhendo a outra organização. No Claude Code, rode `/mcp`, escolha **integra** e entre de novo.
 
