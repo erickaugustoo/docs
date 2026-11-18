@@ -6,7 +6,7 @@ openapi: "POST /api/v1/crm/fields"
 
 ## Como funciona
 
-A rota decide pela `key` dentro da entidade. Se não existe coluna ativa com essa chave, ela é criada e a resposta é `201` com `created: true`. Se já existe com o mesmo tipo, o rótulo e as opções são atualizados e a resposta é `200` com `created: false`. Por isso você pode chamar a rota sempre que a sua integração sobe, sem conferir antes.
+A rota decide pela `key` dentro da entidade. Se não existe coluna ativa com essa chave, ela é criada e a resposta é `201` com `created: true`. Se já existe com o mesmo tipo, o rótulo e as opções são atualizados (e o `agent_writable`, quando você envia) e a resposta é `200` com `created: false`. Por isso você pode chamar a rota sempre que a sua integração sobe, sem conferir antes.
 
 Sem `key`, a chave sai do rótulo: "Convênio médico" vira `convenio_medico`.
 

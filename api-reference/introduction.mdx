@@ -1,6 +1,6 @@
 ---
 title: "Introdução"
-description: "Visão geral da API BFI da Integra"
+description: "Visão geral da API da Integra"
 ---
 
 ## Base URL
@@ -56,7 +56,7 @@ Authorization: Bearer ik_live_sua_key_aqui
 | `PATCH` | `/api/v1/crm/fields/{id}` | Alterar uma coluna |
 | `DELETE` | `/api/v1/crm/fields/{id}` | Arquivar uma coluna |
 
-As rotas do CRM pedem os escopos `crm:read` (consulta) e `crm:write` (criar, alterar e arquivar) na API Key.
+As rotas do CRM pedem os escopos `crm:read` (consulta) e `crm:write` (criar, alterar e arquivar) na API Key. O `crm:write` não inclui a leitura: para ler e gravar, marque os dois.
 
 ## Rate Limiting
 

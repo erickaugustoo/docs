@@ -3,7 +3,7 @@
   "info": {
     "title": "Integra BFI API",
     "version": "1.0.0",
-    "description": "API da Integra para integraÃ§Ãµes externas. DocumentaÃ§Ã£o completa em https://docs.useintegra.com.br"
+    "description": "<img src=\"/public/logo_dark.webp\" alt=\"Integra\" height=\"36\" style=\"margin-bottom:16px\" />\n\nA API da Integra para integrações externas.\n\n> [!tip]\n> **Copie a documentação completa para sua IA favorita:**\n> [Abrir página de cópia](/docs/markdown) ou baixe o [llm.txt](/llm.txt)\n\n---\n\n## Como começar\n\n### 1. Gerar sua API Key\n\nAcesse o painel da Integra em **Settings > API Keys** e clique em **Nova API Key**.\n\n> [!important]\n> Copie a key gerada (`ik_live_...`) imediatamente: ela **só será exibida uma vez**.\n\n### 2. Autenticar requests\n\nEnvie o header `Authorization` em todas as chamadas:\n\n```\nAuthorization: Bearer ik_live_sua_key_aqui\n```\n\n### 3. Fazer sua primeira chamada\n\n```bash\ncurl -H \"Authorization: Bearer ik_live_xxx\" \\\n  https://api.useintegra.com.br/api/v1/campaigns\n```\n\n> [!success]\n> Se a resposta for `200 OK` com JSON, sua integração está funcionando!\n\n---\n\n## Rate Limiting\n\n| Header | Descrição |\n|--------|-----------|\n| `X-RateLimit-Limit` | Limite total (60/min) |\n| `X-RateLimit-Remaining` | Requests restantes |\n| `X-RateLimit-Reset` | Timestamp de reset (epoch) |\n\n> [!warning]\n> Ao exceder **60 requests/minuto** por API Key, a API retorna status `429 Too Many Requests`.\n\n---\n\n## Erros comuns\n\n| Status | Erro | Causa |\n|--------|------|-------|\n| `401` | Invalid API key | Key inválida ou revogada |\n| `403` | Forbidden | Key sem permissão para o recurso |\n| `429` | Rate limit exceeded | Excedeu 60 req/min |\n| `500` | Internal server error | Erro interno, contate o suporte |\n"
   },
   "tags": [
     {
@@ -12,23 +12,23 @@
     },
     {
       "name": "Calls",
-      "description": "HistÃ³rico de chamadas"
+      "description": "Histórico de chamadas"
     },
     {
       "name": "CRM",
-      "description": "CRM Integra da organizaÃ§Ã£o: funis, contatos, negÃ³cios e atividades"
+      "description": "CRM Integra da organização: funis, contatos, negócios e atividades"
     },
     {
       "name": "Automations",
-      "description": "Dispara as automaÃ§Ãµes com o gatilho Chamada pela nossa API"
+      "description": "Dispara as automações com o gatilho Chamada pela nossa API"
     },
     {
       "name": "Meetings",
-      "description": "ReuniÃµes que os agentes marcaram na agenda da organizaÃ§Ã£o"
+      "description": "Reuniões que os agentes marcaram na agenda da organização"
     },
     {
       "name": "Webhooks",
-      "description": "Gerenciamento de webhooks para notificaÃ§Ãµes em tempo real"
+      "description": "Gerenciamento de webhooks para notificações em tempo real"
     }
   ],
   "security": [
@@ -38,7 +38,8 @@
   ],
   "servers": [
     {
-      "url": "https://api.useintegra.com.br"
+      "url": "https://api.useintegra.com.br",
+      "description": "Production"
     }
   ],
   "components": {
@@ -47,7 +48,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "API Key",
-        "description": "API Key da organizaÃ§Ã£o (Authorization: Bearer ik_live_xxx)"
+        "description": "API Key da organização (Authorization: Bearer ik_live_xxx)"
       }
     },
     "schemas": {
@@ -70,7 +71,7 @@
               "won",
               "lost"
             ],
-            "description": "open (aberta), won (ganho) ou lost (perdido): o negÃ³cio na etapa fica com esse status"
+            "description": "open (aberta), won (ganho) ou lost (perdido): o negócio na etapa fica com esse status"
           },
           "probability": {
             "type": [
@@ -98,7 +99,7 @@
           },
           "is_default": {
             "type": "boolean",
-            "description": "O funil padrÃ£o: recebe o negÃ³cio criado sem pipeline_id nem stage_id"
+            "description": "O funil padrão: recebe o negócio criado sem pipeline_id nem stage_id"
           },
           "position": {
             "type": "number"
@@ -108,7 +109,7 @@
               "string",
               "null"
             ],
-            "description": "Quando foi arquivado (nÃ£o recebe negÃ³cio); null no ativo",
+            "description": "Quando foi arquivado (não recebe negócio); null no ativo",
             "example": "2026-11-02T14:00:00.000Z"
           },
           "stages": {
@@ -119,12 +120,12 @@
           },
           "created_at": {
             "type": "string",
-            "description": "CriaÃ§Ã£o (UTC)",
+            "description": "Criação (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           },
           "updated_at": {
             "type": "string",
-            "description": "Ãltima mudanÃ§a (UTC)",
+            "description": "Última mudança (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           }
         },
@@ -162,7 +163,7 @@
               "string",
               "null"
             ],
-            "description": "E.164 (nulo no contato sÃ³ do Instagram ou do Messenger)"
+            "description": "E.164 (nulo no contato só do Instagram ou do Messenger)"
           },
           "company": {
             "type": [
@@ -234,7 +235,7 @@
           },
           "opt_out": {
             "type": "boolean",
-            "description": "NÃ£o quer ser contatado (a campanha pula)"
+            "description": "Não quer ser contatado (a campanha pula)"
           },
           "opt_out_at": {
             "type": [
@@ -249,17 +250,17 @@
               "string",
               "null"
             ],
-            "description": "Ãltima ligaÃ§Ã£o ou conversa",
+            "description": "Última ligação ou conversa",
             "example": "2026-11-02T14:00:00.000Z"
           },
           "created_at": {
             "type": "string",
-            "description": "CriaÃ§Ã£o (UTC)",
+            "description": "Criação (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           },
           "updated_at": {
             "type": "string",
-            "description": "Ãltima mudanÃ§a (UTC)",
+            "description": "Última mudança (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           }
         },
@@ -287,7 +288,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 40,
-            "description": "Telefone em E.164, com o + e o cÃ³digo do paÃ­s (+5511987654321). EspaÃ§o, parÃªnteses, ponto e traÃ§o sÃ£o aceitos e saem. Celular brasileiro sem o 9Âº dÃ­gito ganha o 9",
+            "description": "Telefone em E.164, com o + e o código do país (+5511987654321). Espaço, parênteses, ponto e traço são aceitos e saem. Celular brasileiro sem o 9º dígito ganha o 9",
             "example": "+5511987654321"
           },
           "name": {
@@ -315,7 +316,7 @@
             ],
             "minLength": 1,
             "maxLength": 160,
-            "description": "Nome da empresa: a de mesmo nome (sem diferenÃ§a de maiÃºscula) ou uma nova. null tira a empresa do contato"
+            "description": "Nome da empresa: a de mesmo nome (sem diferença de maiúscula) ou uma nova. null tira a empresa do contato"
           },
           "tags": {
             "type": "array",
@@ -325,7 +326,7 @@
               "maxLength": 40
             },
             "maxItems": 30,
-            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "description": "Até 30 tags, cada uma com até 40 caracteres; a repetida sai. Substitui a lista inteira",
             "example": [
               "vip"
             ]
@@ -352,7 +353,7 @@
                 }
               ]
             },
-            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "description": "Campos personalizados (os criados no painel, em CRM > Configurações), pela chave: texto (até 500), número, data (AAAA-MM-DD), uma das opções da seleção ou true/false. null tira o valor. As chaves que não vierem ficam como estão",
             "example": {
               "convenio": "Unimed"
             }
@@ -372,7 +373,7 @@
           },
           "opt_out": {
             "type": "boolean",
-            "description": "true: nÃ£o quer ser contatado (a campanha pula); false desfaz"
+            "description": "true: não quer ser contatado (a campanha pula); false desfaz"
           }
         },
         "required": [
@@ -390,7 +391,7 @@
             ],
             "minLength": 1,
             "maxLength": 40,
-            "description": "Telefone em E.164, com o + e o cÃ³digo do paÃ­s (+5511987654321). EspaÃ§o, parÃªnteses, ponto e traÃ§o sÃ£o aceitos e saem. Celular brasileiro sem o 9Âº dÃ­gito ganha o 9",
+            "description": "Telefone em E.164, com o + e o código do país (+5511987654321). Espaço, parênteses, ponto e traço são aceitos e saem. Celular brasileiro sem o 9º dígito ganha o 9",
             "example": "+5511987654321"
           },
           "name": {
@@ -418,7 +419,7 @@
             ],
             "minLength": 1,
             "maxLength": 160,
-            "description": "Nome da empresa: a de mesmo nome (sem diferenÃ§a de maiÃºscula) ou uma nova. null tira a empresa do contato"
+            "description": "Nome da empresa: a de mesmo nome (sem diferença de maiúscula) ou uma nova. null tira a empresa do contato"
           },
           "tags": {
             "type": "array",
@@ -428,7 +429,7 @@
               "maxLength": 40
             },
             "maxItems": 30,
-            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "description": "Até 30 tags, cada uma com até 40 caracteres; a repetida sai. Substitui a lista inteira",
             "example": [
               "vip"
             ]
@@ -455,7 +456,7 @@
                 }
               ]
             },
-            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "description": "Campos personalizados (os criados no painel, em CRM > Configurações), pela chave: texto (até 500), número, data (AAAA-MM-DD), uma das opções da seleção ou true/false. null tira o valor. As chaves que não vierem ficam como estão",
             "example": {
               "convenio": "Unimed"
             }
@@ -475,7 +476,7 @@
           },
           "opt_out": {
             "type": "boolean",
-            "description": "true: nÃ£o quer ser contatado (a campanha pula); false desfaz"
+            "description": "true: não quer ser contatado (a campanha pula); false desfaz"
           }
         },
         "additionalProperties": false
@@ -545,7 +546,7 @@
               "string",
               "null"
             ],
-            "description": "PrevisÃ£o de fechamento (AAAA-MM-DD)"
+            "description": "Previsão de fechamento (AAAA-MM-DD)"
           },
           "contact": {
             "type": [
@@ -630,12 +631,12 @@
           },
           "created_at": {
             "type": "string",
-            "description": "CriaÃ§Ã£o (UTC)",
+            "description": "Criação (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           },
           "updated_at": {
             "type": "string",
-            "description": "Ãltima mudanÃ§a (UTC)",
+            "description": "Última mudança (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           }
         },
@@ -670,7 +671,7 @@
           "pipeline_id": {
             "type": "string",
             "format": "uuid",
-            "description": "O funil (GET /api/v1/crm/pipelines). Sem ele e sem stage_id: o funil padrÃ£o"
+            "description": "O funil (GET /api/v1/crm/pipelines). Sem ele e sem stage_id: o funil padrão"
           },
           "stage_id": {
             "type": "string",
@@ -716,7 +717,7 @@
               "maxLength": 40
             },
             "maxItems": 30,
-            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "description": "Até 30 tags, cada uma com até 40 caracteres; a repetida sai. Substitui a lista inteira",
             "example": [
               "vip"
             ]
@@ -743,7 +744,7 @@
                 }
               ]
             },
-            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "description": "Campos personalizados (os criados no painel, em CRM > Configurações), pela chave: texto (até 500), número, data (AAAA-MM-DD), uma das opções da seleção ou true/false. null tira o valor. As chaves que não vierem ficam como estão",
             "example": {
               "convenio": "Unimed"
             }
@@ -752,7 +753,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 300,
-            "description": "SÃ³ com a etapa de perdido"
+            "description": "Só com a etapa de perdido"
           }
         },
         "required": [
@@ -771,7 +772,7 @@
           "stage_id": {
             "type": "string",
             "format": "uuid",
-            "description": "Uma etapa DO FUNIL do negÃ³cio. Mudar de etapa registra a atividade stage_change"
+            "description": "Uma etapa DO FUNIL do negócio. Mudar de etapa registra a atividade stage_change"
           },
           "status": {
             "type": "string",
@@ -779,7 +780,7 @@
               "won",
               "lost"
             ],
-            "description": "won ou lost: sem stage_id, o negÃ³cio vai para a primeira etapa desse tipo no funil; com stage_id, os dois tÃªm de concordar. Para reabrir, mande o stage_id de uma etapa aberta"
+            "description": "won ou lost: sem stage_id, o negócio vai para a primeira etapa desse tipo no funil; com stage_id, os dois têm de concordar. Para reabrir, mande o stage_id de uma etapa aberta"
           },
           "lost_reason": {
             "type": [
@@ -788,7 +789,7 @@
             ],
             "minLength": 1,
             "maxLength": 300,
-            "description": "Motivo da perda: sÃ³ com o negÃ³cio perdido no fim. null limpa"
+            "description": "Motivo da perda: só com o negócio perdido no fim. null limpa"
           },
           "value_cents": {
             "type": [
@@ -828,7 +829,7 @@
               "maxLength": 40
             },
             "maxItems": 30,
-            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "description": "Até 30 tags, cada uma com até 40 caracteres; a repetida sai. Substitui a lista inteira",
             "example": [
               "vip"
             ]
@@ -855,7 +856,7 @@
                 }
               ]
             },
-            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "description": "Campos personalizados (os criados no painel, em CRM > Configurações), pela chave: texto (até 500), número, data (AAAA-MM-DD), uma das opções da seleção ou true/false. null tira o valor. As chaves que não vierem ficam como estão",
             "example": {
               "convenio": "Unimed"
             }
@@ -924,7 +925,7 @@
               "string",
               "null"
             ],
-            "description": "A ligaÃ§Ã£o (o mesmo id de GET /api/v1/calls/{id}), na atividade de ligaÃ§Ã£o"
+            "description": "A ligação (o mesmo id de GET /api/v1/calls/{id}), na atividade de ligação"
           },
           "title": {
             "type": [
@@ -975,7 +976,7 @@
               "from_stage_name",
               "to_stage_name"
             ],
-            "description": "SÃ³ na stage_change"
+            "description": "Só na stage_change"
           },
           "created_at": {
             "type": "string",
@@ -1009,7 +1010,7 @@
           "deal_id": {
             "type": "string",
             "format": "uuid",
-            "description": "O negÃ³cio"
+            "description": "O negócio"
           },
           "title": {
             "type": "string",
@@ -1020,7 +1021,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 20000,
-            "description": "O texto da nota (atÃ© 20.000 caracteres)"
+            "description": "O texto da nota (até 20.000 caracteres)"
           },
           "occurred_at": {
             "type": "string",
@@ -1050,7 +1051,7 @@
           },
           "key": {
             "type": "string",
-            "description": "A chave que vai em custom_fields do contato e do negÃ³cio"
+            "description": "A chave que vai em custom_fields do contato e do negócio"
           },
           "label": {
             "type": "string"
@@ -1074,7 +1075,7 @@
             "items": {
               "type": "string"
             },
-            "description": "As opÃ§Ãµes, sÃ³ em type select; null nos outros"
+            "description": "As opções, só em type select; null nos outros"
           },
           "position": {
             "type": "number",
@@ -1086,12 +1087,12 @@
           },
           "created_at": {
             "type": "string",
-            "description": "CriaÃ§Ã£o (UTC)",
+            "description": "Criação (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           },
           "updated_at": {
             "type": "string",
-            "description": "Ãltima mudanÃ§a (UTC)",
+            "description": "Última mudança (UTC)",
             "example": "2026-11-02T14:00:00.000Z"
           }
         },
@@ -1124,8 +1125,8 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 60,
-            "description": "O nome que o painel mostra (atÃ© 60 caracteres)",
-            "example": "ConvÃªnio"
+            "description": "O nome que o painel mostra (até 60 caracteres)",
+            "example": "Convênio"
           },
           "type": {
             "type": "string",
@@ -1141,7 +1142,7 @@
           "key": {
             "type": "string",
             "pattern": "^[a-z][a-z0-9_]{0,39}$",
-            "description": "A chave do campo. Sem ela, sai do rÃ³tulo (sem acento, minÃºscula, sÃ³ letras, nÃºmeros e _)",
+            "description": "A chave do campo. Sem ela, sai do rótulo (sem acento, minúscula, só letras, números e _)",
             "example": "convenio"
           },
           "options": {
@@ -1153,7 +1154,7 @@
             },
             "minItems": 1,
             "maxItems": 50,
-            "description": "As opÃ§Ãµes da seleÃ§Ã£o: de 1 a 50, cada uma com atÃ© 60 caracteres, sem repetir. SÃ³ em type select, e obrigatÃ³rio nele",
+            "description": "As opções da seleção: de 1 a 50, cada uma com até 60 caracteres, sem repetir. Só em type select, e obrigatório nele",
             "example": [
               "Unimed",
               "Amil"
@@ -1161,7 +1162,7 @@
           },
           "agent_writable": {
             "type": "boolean",
-            "description": "O agente pode preencher. Default: true no campo novo; no que jÃ¡ existe, o valor atual fica"
+            "description": "O agente pode preencher. Default: true no campo novo; no que já existe, o valor atual fica"
           }
         },
         "required": [
@@ -1178,8 +1179,8 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 60,
-            "description": "O nome que o painel mostra (atÃ© 60 caracteres)",
-            "example": "ConvÃªnio"
+            "description": "O nome que o painel mostra (até 60 caracteres)",
+            "example": "Convênio"
           },
           "options": {
             "type": "array",
@@ -1190,7 +1191,7 @@
             },
             "minItems": 1,
             "maxItems": 50,
-            "description": "SÃ³ no campo de seleÃ§Ã£o (nos outros, 400)",
+            "description": "Só no campo de seleção (nos outros, 400)",
             "example": [
               "Unimed",
               "Amil"
@@ -1234,7 +1235,7 @@
           },
           "request_id": {
             "type": "string",
-            "description": "A Idempotency-Key: o motor dispara uma vez por automaÃ§Ã£o e pedido"
+            "description": "A Idempotency-Key: o motor dispara uma vez por automação e pedido"
           }
         },
         "required": [
@@ -1253,7 +1254,7 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 40,
-            "description": "Telefone em E.164 (+5511987654321): acha o contato da organizaÃ§Ã£o ou cria um novo",
+            "description": "Telefone em E.164 (+5511987654321): acha o contato da organização ou cria um novo",
             "example": "+5511987654321"
           },
           "name": {
@@ -1283,12 +1284,12 @@
           "contact_id": {
             "type": "string",
             "format": "uuid",
-            "description": "Um contato que jÃ¡ existe (no lugar de contact)"
+            "description": "Um contato que já existe (no lugar de contact)"
           },
           "deal_id": {
             "type": "string",
             "format": "uuid",
-            "description": "Um negÃ³cio do mesmo contato, que a execuÃ§Ã£o usa"
+            "description": "Um negócio do mesmo contato, que a execução usa"
           },
           "data": {
             "type": "object",
@@ -1306,7 +1307,7 @@
                 }
               ]
             },
-            "description": "AtÃ© 30 campos (texto atÃ© 1000, nÃºmero ou booleano). Cada um vira a marcaÃ§Ã£o {{gatilho.dados.<chave>}} na automaÃ§Ã£o. O texto nÃ£o aceita {{ nem }} nem caracteres de controle (quebra de linha e tab passam)",
+            "description": "Até 30 campos (texto até 1000, número ou booleano). Cada um vira a marcação {{gatilho.dados.<chave>}} na automação. O texto não aceita {{ nem }} nem caracteres de controle (quebra de linha e tab passam)",
             "example": {
               "produto": "ERP",
               "origem": "landing"
@@ -1320,7 +1321,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "ID da reuniÃ£o (UUID)"
+            "description": "ID da reunião (UUID)"
           },
           "status": {
             "type": "string",
@@ -1332,16 +1333,16 @@
               "cancelled",
               "no_response"
             ],
-            "description": "scheduled (marcada), confirmed (o contato confirmou), reschedule_requested (o contato pediu para remarcar), rescheduled (remarcada para outro horÃ¡rio), cancelled (cancelada), no_response (o contato nÃ£o respondeu ao lembrete)"
+            "description": "scheduled (marcada), confirmed (o contato confirmou), reschedule_requested (o contato pediu para remarcar), rescheduled (remarcada para outro horário), cancelled (cancelada), no_response (o contato não respondeu ao lembrete)"
           },
           "starts_at": {
             "type": "string",
-            "description": "InÃ­cio da reuniÃ£o (UTC)",
+            "description": "Início da reunião (UTC)",
             "example": "2026-11-03T12:00:00.000Z"
           },
           "ends_at": {
             "type": "string",
-            "description": "Fim da reuniÃ£o (UTC)",
+            "description": "Fim da reunião (UTC)",
             "example": "2026-11-03T12:00:00.000Z"
           },
           "timezone": {
@@ -1357,18 +1358,18 @@
               "messenger",
               "voice"
             ],
-            "description": "Onde a reuniÃ£o foi marcada: whatsapp, instagram, messenger ou voice (ligaÃ§Ã£o)"
+            "description": "Onde a reunião foi marcada: whatsapp, instagram, messenger ou voice (ligação)"
           },
           "agent_id": {
             "type": "string",
-            "description": "ID do agente que marcou a reuniÃ£o"
+            "description": "ID do agente que marcou a reunião"
           },
           "call_id": {
             "type": [
               "string",
               "null"
             ],
-            "description": "ID da ligaÃ§Ã£o em que a reuniÃ£o foi marcada (o mesmo de GET /api/v1/calls/{id}); nulo quando foi marcada no WhatsApp, Instagram ou Messenger"
+            "description": "ID da ligação em que a reunião foi marcada (o mesmo de GET /api/v1/calls/{id}); nulo quando foi marcada no WhatsApp, Instagram ou Messenger"
           },
           "contact": {
             "type": "object",
@@ -1414,7 +1415,7 @@
                   "failed",
                   "cancelled"
                 ],
-                "description": "Lembrete de confirmaÃ§Ã£o: disabled (desligado quando a reuniÃ£o foi marcada), pending (agendado), sent (enviado), skipped (nÃ£o enviado, por exemplo marcada em cima da hora ou sem telefone), failed (falhou), cancelled (a reuniÃ£o foi cancelada antes do envio)"
+                "description": "Lembrete de confirmação: disabled (desligado quando a reunião foi marcada), pending (agendado), sent (enviado), skipped (não enviado, por exemplo marcada em cima da hora ou sem telefone), failed (falhou), cancelled (a reunião foi cancelada antes do envio)"
               },
               "channel": {
                 "type": [
@@ -1432,7 +1433,7 @@
                   "string",
                   "null"
                 ],
-                "description": "ID da ligaÃ§Ã£o de lembrete (o mesmo de GET /api/v1/calls/{id}), quando o lembrete Ã© por ligaÃ§Ã£o e ela jÃ¡ saiu"
+                "description": "ID da ligação de lembrete (o mesmo de GET /api/v1/calls/{id}), quando o lembrete é por ligação e ela já saiu"
               },
               "scheduled_for": {
                 "type": [
@@ -1470,12 +1471,12 @@
           },
           "created_at": {
             "type": "string",
-            "description": "Quando a reuniÃ£o foi registrada (UTC)",
+            "description": "Quando a reunião foi registrada (UTC)",
             "example": "2026-11-03T12:00:00.000Z"
           },
           "updated_at": {
             "type": "string",
-            "description": "Ãltima mudanÃ§a no registro (UTC)",
+            "description": "Última mudança no registro (UTC)",
             "example": "2026-11-03T12:00:00.000Z"
           }
         },
@@ -1504,7 +1505,7 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Listar campanhas da organizaÃ§Ã£o",
+        "summary": "Listar campanhas da organização",
         "security": [
           {
             "ApiKey": []
@@ -1514,7 +1515,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -1523,7 +1524,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -1736,7 +1737,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -1777,12 +1778,12 @@
                     "minLength": 1,
                     "maxLength": 200,
                     "description": "Campaign name. Names starting with \"auto:\" are reserved for automations",
-                    "example": "Campanha MarÃ§o 2026"
+                    "example": "Campanha Março 2026"
                   },
                   "project_id": {
                     "type": "string",
                     "maxLength": 64,
-                    "description": "Project ID (copy from Panel â project header)",
+                    "description": "Project ID (copy from Panel → project header)",
                     "example": "b9c80a57-fad2-41a0-a304-727337ad1b1f"
                   },
                   "channel": {
@@ -1798,7 +1799,7 @@
                   "agent_id": {
                     "type": "string",
                     "maxLength": 64,
-                    "description": "Agent ID (copy from Panel â agent card). Required for voice campaigns (voice agent). Optional for WhatsApp: the text agent that answers whoever replies (overrides the agent linked to the template)",
+                    "description": "Agent ID (copy from Panel → agent card). Required for voice campaigns (voice agent). Optional for WhatsApp: the text agent that answers whoever replies (overrides the agent linked to the template)",
                     "example": "7e09d093-904a-48de-ac49-b0445906c38e"
                   },
                   "phone_number_id": {
@@ -1822,7 +1823,7 @@
                   "scheduled_at": {
                     "type": "string",
                     "maxLength": 64,
-                    "description": "ISO 8601 date-time with timezone offset (Z, -0300 or -03:00). Voice campaigns REQUIRE date, time and offset (400 without them), dial at this instant and are returned in SÃ£o Paulo time (-03:00). WhatsApp campaigns read a value without offset as UTC and are returned in UTC (Z)",
+                    "description": "ISO 8601 date-time with timezone offset (Z, -0300 or -03:00). Voice campaigns REQUIRE date, time and offset (400 without them), dial at this instant and are returned in São Paulo time (-03:00). WhatsApp campaigns read a value without offset as UTC and are returned in UTC (Z)",
                     "example": "2026-03-25T14:00:00-03:00"
                   },
                   "recipients": {
@@ -1838,7 +1839,7 @@
                         "recipient_name": {
                           "type": "string",
                           "maxLength": 200,
-                          "example": "JoÃ£o Silva"
+                          "example": "João Silva"
                         },
                         "dynamic_variables": {
                           "type": "object",
@@ -1848,7 +1849,7 @@
                           },
                           "description": "Key-value pairs for template variables (max 50 keys of up to 100 characters; values up to 1000). Voice campaigns accept free-form names used in the agent prompt (e.g. leadName for {{leadName}}). WhatsApp campaigns: numeric keys (\"1\", \"2\", ...) are the positional template parameters ({{1}}, {{2}}); named keys (e.g. leadName, empresa, email) are contact data for the text agent that answers, the same logic as voice (they go to the agent prompt, never to the message)",
                           "example": {
-                            "1": "JoÃ£o",
+                            "1": "João",
                             "2": "Acme Corp"
                           }
                         }
@@ -1920,7 +1921,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -2019,7 +2020,7 @@
             }
           },
           "400": {
-            "description": "Bad Request: campo invÃ¡lido ou JSON malformado no corpo da requisiÃ§Ã£o",
+            "description": "Bad Request: campo inválido ou JSON malformado no corpo da requisição",
             "content": {
               "application/json": {
                 "schema": {
@@ -2055,7 +2056,7 @@
             }
           },
           "403": {
-            "description": "Limite mensal de ligaÃ§Ãµes do plano atingido (canal voice)",
+            "description": "Limite mensal de ligações do plano atingido (canal voice)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2073,7 +2074,7 @@
             }
           },
           "404": {
-            "description": "Projeto ou template nÃ£o encontrado (canal whatsapp)",
+            "description": "Projeto ou template não encontrado (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2091,7 +2092,7 @@
             }
           },
           "413": {
-            "description": "Corpo da requisiÃ§Ã£o acima do teto de 10 MB (a lista de destinatÃ¡rios Ã© grande demais)",
+            "description": "Corpo da requisição acima do teto de 10 MB (a lista de destinatários é grande demais)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2109,7 +2110,7 @@
             }
           },
           "422": {
-            "description": "Template nÃ£o aprovado/desabilitado ou quota de conversas da Meta excedida (canal whatsapp)",
+            "description": "Template não aprovado/desabilitado ou quota de conversas da Meta excedida (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2127,7 +2128,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp. ATENÃÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada â a criaÃ§Ã£o pode ter sido concluÃ­da do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir Ã s cegas duplica o disparo para toda a lista",
+            "description": "Falha na comunicação com o serviço de WhatsApp. ATENÇÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada — a criação pode ter sido concluída do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir às cegas duplica o disparo para toda a lista",
             "content": {
               "application/json": {
                 "schema": {
@@ -2145,7 +2146,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada) ou, no canal voice, o limite do plano nÃ£o pÃ´de ser verificado. Nada Ã© criado; repita depois",
+            "description": "Canal whatsapp indisponível (integração não configurada) ou, no canal voice, o limite do plano não pôde ser verificado. Nada é criado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -2170,8 +2171,8 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Conversas de WhatsApp disponÃ­veis hoje",
-        "description": "Quantas conversas cada nÃºmero de WhatsApp da organizaÃ§Ã£o ainda pode iniciar nas prÃ³ximas 24h. O valor Ã© o tier de mensagens que a Meta concede ao nÃºmero menos as conversas jÃ¡ iniciadas na janela. Use antes de criar uma campanha: uma lista maior que `available` Ã© recusada com 422 na criaÃ§Ã£o.",
+        "summary": "Conversas de WhatsApp disponíveis hoje",
+        "description": "Quantas conversas cada número de WhatsApp da organização ainda pode iniciar nas próximas 24h. O valor é o tier de mensagens que a Meta concede ao número menos as conversas já iniciadas na janela. Use antes de criar uma campanha: uma lista maior que `available` é recusada com 422 na criação.",
         "security": [
           {
             "ApiKey": []
@@ -2179,7 +2180,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Quota por nÃºmero conectado",
+            "description": "Quota por número conectado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2192,22 +2193,22 @@
                         "properties": {
                           "external_id": {
                             "type": "string",
-                            "description": "ID do nÃºmero na Meta"
+                            "description": "ID do número na Meta"
                           },
                           "name": {
                             "type": [
                               "string",
                               "null"
                             ],
-                            "description": "Nome cadastrado do nÃºmero"
+                            "description": "Nome cadastrado do número"
                           },
                           "tier": {
                             "type": "number",
-                            "description": "Limite de conversas por 24h concedido pela Meta ao nÃºmero"
+                            "description": "Limite de conversas por 24h concedido pela Meta ao número"
                           },
                           "used_24h": {
                             "type": "number",
-                            "description": "Conversas jÃ¡ iniciadas nas Ãºltimas 24h"
+                            "description": "Conversas já iniciadas nas últimas 24h"
                           },
                           "available": {
                             "type": "number",
@@ -2232,7 +2233,7 @@
             }
           },
           "401": {
-            "description": "API Key ausente ou invÃ¡lida",
+            "description": "API Key ausente ou inválida",
             "content": {
               "application/json": {
                 "schema": {
@@ -2250,7 +2251,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp",
+            "description": "Falha na comunicação com o serviço de WhatsApp",
             "content": {
               "application/json": {
                 "schema": {
@@ -2268,7 +2269,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada)",
+            "description": "Canal whatsapp indisponível (integração não configurada)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2522,7 +2523,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrada",
+            "description": "Não encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -2572,7 +2573,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -2620,7 +2621,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrada",
+            "description": "Não encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -2638,7 +2639,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp (canal whatsapp)",
+            "description": "Falha na comunicação com o serviço de WhatsApp (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2656,7 +2657,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada)",
+            "description": "Canal whatsapp indisponível (integração não configurada)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2681,7 +2682,7 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Retentar destinatÃ¡rios com falha",
+        "summary": "Retentar destinatários com falha",
         "security": [
           {
             "ApiKey": []
@@ -2706,7 +2707,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -2758,7 +2759,7 @@
             }
           },
           "403": {
-            "description": "Limite mensal de ligaÃ§Ãµes do plano atingido (canal voice)",
+            "description": "Limite mensal de ligações do plano atingido (canal voice)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2776,7 +2777,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrada",
+            "description": "Não encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -2794,7 +2795,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp (canal whatsapp)",
+            "description": "Falha na comunicação com o serviço de WhatsApp (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -2812,7 +2813,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada) ou, no canal voice, o limite do plano nÃ£o pÃ´de ser verificado. Nada Ã© reenfileirado; repita depois",
+            "description": "Canal whatsapp indisponível (integração não configurada) ou, no canal voice, o limite do plano não pôde ser verificado. Nada é reenfileirado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -2837,7 +2838,7 @@
         "tags": [
           "Calls"
         ],
-        "summary": "Listar histÃ³rico de chamadas da organizaÃ§Ã£o",
+        "summary": "Listar histórico de chamadas da organização",
         "security": [
           {
             "ApiKey": []
@@ -2847,7 +2848,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -2856,7 +2857,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -2886,7 +2887,7 @@
                 "INBOUND",
                 "OUTBOUND"
               ],
-              "description": "Filtrar por direÃ§Ã£o"
+              "description": "Filtrar por direção"
             },
             "required": false,
             "name": "direction",
@@ -2896,7 +2897,7 @@
             "schema": {
               "type": "string",
               "format": "date-time",
-              "description": "Data inÃ­cio (ISO 8601 com fuso, ex: 2026-10-01T00:00:00-03:00)"
+              "description": "Data início (ISO 8601 com fuso, ex: 2026-10-01T00:00:00-03:00)"
             },
             "required": false,
             "name": "from",
@@ -3042,7 +3043,7 @@
             }
           },
           "400": {
-            "description": "Filtro invÃ¡lido (status, direction, from, to), page ou limit que nÃ£o Ã© inteiro, ou page acima do mÃ¡ximo",
+            "description": "Filtro inválido (status, direction, from, to), page ou limit que não é inteiro, ou page acima do máximo",
             "content": {
               "application/json": {
                 "schema": {
@@ -3060,7 +3061,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3224,7 +3225,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrada",
+            "description": "Não encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -3257,7 +3258,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Todos os funis da organizaÃ§Ã£o (os arquivados com archived_at), na ordem, com as etapas na ordem",
+            "description": "Todos os funis da organização (os arquivados com archived_at), na ordem, com as etapas na ordem",
             "content": {
               "application/json": {
                 "schema": {
@@ -3278,7 +3279,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3296,7 +3297,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -3314,7 +3315,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3351,7 +3352,7 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 100,
-              "description": "Parte do nome ou do e-mail (sem diferenÃ§a de maiÃºscula) ou 3 ou mais dÃ­gitos do telefone"
+              "description": "Parte do nome ou do e-mail (sem diferença de maiúscula) ou 3 ou mais dígitos do telefone"
             },
             "required": false,
             "name": "search",
@@ -3362,7 +3363,7 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 40,
-              "description": "SÃ³ os contatos com esta tag"
+              "description": "Só os contatos com esta tag"
             },
             "required": false,
             "name": "tag",
@@ -3372,7 +3373,7 @@
             "schema": {
               "type": "string",
               "maxLength": 40,
-              "description": "Telefone exato em E.164 (com ou sem o 9Âº dÃ­gito, o mesmo contato)"
+              "description": "Telefone exato em E.164 (com ou sem o 9º dígito, o mesmo contato)"
             },
             "required": false,
             "name": "phone",
@@ -3382,7 +3383,7 @@
             "schema": {
               "type": "string",
               "maxLength": 200,
-              "description": "O `pagination.next_cursor` da pÃ¡gina anterior (sem ele, a primeira pÃ¡gina)"
+              "description": "O `pagination.next_cursor` da página anterior (sem ele, a primeira página)"
             },
             "required": false,
             "name": "cursor",
@@ -3391,7 +3392,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -3423,7 +3424,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Cursor da prÃ³xima pÃ¡gina; null na Ãºltima"
+                          "description": "Cursor da próxima página; null na última"
                         }
                       },
                       "required": [
@@ -3441,7 +3442,7 @@
             }
           },
           "400": {
-            "description": "Filtro invÃ¡lido (search, tag, phone, cursor) ou limit que nÃ£o Ã© inteiro",
+            "description": "Filtro inválido (search, tag, phone, cursor) ou limit que não é inteiro",
             "content": {
               "application/json": {
                 "schema": {
@@ -3459,7 +3460,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3477,7 +3478,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -3495,7 +3496,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3519,7 +3520,7 @@
           "CRM"
         ],
         "summary": "Criar ou atualizar um contato pelo telefone",
-        "description": "Upsert pelo telefone: o contato da organizaÃ§Ã£o com o mesmo telefone (com ou sem o 9Âº dÃ­gito) Ã© atualizado com o que veio; sem ele, um contato novo Ã© criado, se couber no limite de contatos do plano.",
+        "description": "Upsert pelo telefone: o contato da organização com o mesmo telefone (com ou sem o 9º dígito) é atualizado com o que veio; sem ele, um contato novo é criado, se couber no limite de contatos do plano.",
         "security": [
           {
             "ApiKey": []
@@ -3537,7 +3538,7 @@
         },
         "responses": {
           "200": {
-            "description": "JÃ¡ existia: atualizado (created: false)",
+            "description": "Já existia: atualizado (created: false)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3581,7 +3582,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido, telefone fora do E.164, campo personalizado que nÃ£o existe ou valor fora do tipo, ou JSON malformado",
+            "description": "Campo inválido, telefone fora do E.164, campo personalizado que não existe ou valor fora do tipo, ou JSON malformado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3599,7 +3600,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3617,7 +3618,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write, ou o limite de contatos do plano foi atingido (contato novo)",
+            "description": "A chave não tem o escopo crm:write, ou o limite de contatos do plano foi atingido (contato novo)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3635,7 +3636,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3653,7 +3654,7 @@
             }
           },
           "503": {
-            "description": "O limite de contatos do plano nÃ£o pÃ´de ser verificado (contato novo). Nada foi criado; repita depois",
+            "description": "O limite de contatos do plano não pôde ser verificado (contato novo). Nada foi criado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -3707,7 +3708,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3725,7 +3726,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -3743,7 +3744,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3761,7 +3762,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -3823,7 +3824,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido, corpo vazio, telefone fora do E.164 ou campo personalizado invÃ¡lido",
+            "description": "Campo inválido, corpo vazio, telefone fora do E.164 ou campo personalizado inválido",
             "content": {
               "application/json": {
                 "schema": {
@@ -3841,7 +3842,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3859,7 +3860,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -3877,7 +3878,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -3895,7 +3896,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado, ou outro contato da organizaÃ§Ã£o jÃ¡ tem este telefone",
+            "description": "O CRM está desligado, ou outro contato da organização já tem este telefone",
             "content": {
               "application/json": {
                 "schema": {
@@ -3920,7 +3921,7 @@
         "tags": [
           "CRM"
         ],
-        "summary": "Listar negÃ³cios",
+        "summary": "Listar negócios",
         "security": [
           {
             "ApiKey": []
@@ -3931,7 +3932,7 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "SÃ³ os deste funil"
+              "description": "Só os deste funil"
             },
             "required": false,
             "name": "pipeline_id",
@@ -3941,7 +3942,7 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "SÃ³ os desta etapa"
+              "description": "Só os desta etapa"
             },
             "required": false,
             "name": "stage_id",
@@ -3965,7 +3966,7 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "SÃ³ os deste contato"
+              "description": "Só os deste contato"
             },
             "required": false,
             "name": "contact_id",
@@ -3975,7 +3976,7 @@
             "schema": {
               "type": "string",
               "maxLength": 200,
-              "description": "O `pagination.next_cursor` da pÃ¡gina anterior (sem ele, a primeira pÃ¡gina)"
+              "description": "O `pagination.next_cursor` da página anterior (sem ele, a primeira página)"
             },
             "required": false,
             "name": "cursor",
@@ -3984,7 +3985,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -3993,7 +3994,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Os negÃ³cios, os mais novos primeiro",
+            "description": "Os negócios, os mais novos primeiro",
             "content": {
               "application/json": {
                 "schema": {
@@ -4016,7 +4017,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Cursor da prÃ³xima pÃ¡gina; null na Ãºltima"
+                          "description": "Cursor da próxima página; null na última"
                         }
                       },
                       "required": [
@@ -4034,7 +4035,7 @@
             }
           },
           "400": {
-            "description": "Filtro invÃ¡lido ou limit que nÃ£o Ã© inteiro",
+            "description": "Filtro inválido ou limit que não é inteiro",
             "content": {
               "application/json": {
                 "schema": {
@@ -4052,7 +4053,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4070,7 +4071,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -4088,7 +4089,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4111,7 +4112,7 @@
         "tags": [
           "CRM"
         ],
-        "summary": "Criar um negÃ³cio",
+        "summary": "Criar um negócio",
         "security": [
           {
             "ApiKey": []
@@ -4129,7 +4130,7 @@
         },
         "responses": {
           "201": {
-            "description": "O negÃ³cio criado",
+            "description": "O negócio criado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4139,7 +4140,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido; contato, funil ou etapa que nÃ£o Ã© da organizaÃ§Ã£o; etapa de outro funil; funil arquivado ou sem padrÃ£o; motivo de perda fora da etapa de perdido",
+            "description": "Campo inválido; contato, funil ou etapa que não é da organização; etapa de outro funil; funil arquivado ou sem padrão; motivo de perda fora da etapa de perdido",
             "content": {
               "application/json": {
                 "schema": {
@@ -4157,7 +4158,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4175,7 +4176,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -4193,7 +4194,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4218,7 +4219,7 @@
         "tags": [
           "CRM"
         ],
-        "summary": "Detalhes de um negÃ³cio",
+        "summary": "Detalhes de um negócio",
         "security": [
           {
             "ApiKey": []
@@ -4228,7 +4229,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "ID do negÃ³cio (UUID)"
+              "description": "ID do negócio (UUID)"
             },
             "required": true,
             "name": "id",
@@ -4237,7 +4238,7 @@
         ],
         "responses": {
           "200": {
-            "description": "O negÃ³cio",
+            "description": "O negócio",
             "content": {
               "application/json": {
                 "schema": {
@@ -4247,7 +4248,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4265,7 +4266,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -4283,7 +4284,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4301,7 +4302,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4324,7 +4325,7 @@
         "tags": [
           "CRM"
         ],
-        "summary": "Alterar um negÃ³cio (etapa, valor, ganho ou perdido)",
+        "summary": "Alterar um negócio (etapa, valor, ganho ou perdido)",
         "security": [
           {
             "ApiKey": []
@@ -4334,7 +4335,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "ID do negÃ³cio (UUID)"
+              "description": "ID do negócio (UUID)"
             },
             "required": true,
             "name": "id",
@@ -4353,7 +4354,7 @@
         },
         "responses": {
           "200": {
-            "description": "O negÃ³cio alterado",
+            "description": "O negócio alterado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4363,7 +4364,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido; corpo vazio; etapa de outro funil; status que nÃ£o bate com a etapa; motivo de perda sem o negÃ³cio perdido; contato que nÃ£o Ã© da organizaÃ§Ã£o",
+            "description": "Campo inválido; corpo vazio; etapa de outro funil; status que não bate com a etapa; motivo de perda sem o negócio perdido; contato que não é da organização",
             "content": {
               "application/json": {
                 "schema": {
@@ -4381,7 +4382,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4399,7 +4400,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -4417,7 +4418,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4435,7 +4436,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4460,7 +4461,7 @@
         "tags": [
           "CRM"
         ],
-        "summary": "Linha do tempo de um contato ou de um negÃ³cio",
+        "summary": "Linha do tempo de um contato ou de um negócio",
         "security": [
           {
             "ApiKey": []
@@ -4481,7 +4482,7 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "A linha do tempo deste negÃ³cio"
+              "description": "A linha do tempo deste negócio"
             },
             "required": false,
             "name": "deal_id",
@@ -4491,7 +4492,7 @@
             "schema": {
               "type": "string",
               "maxLength": 200,
-              "description": "O `pagination.next_cursor` da pÃ¡gina anterior (sem ele, a primeira pÃ¡gina)"
+              "description": "O `pagination.next_cursor` da página anterior (sem ele, a primeira página)"
             },
             "required": false,
             "name": "cursor",
@@ -4500,7 +4501,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -4532,7 +4533,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Cursor da prÃ³xima pÃ¡gina; null na Ãºltima"
+                          "description": "Cursor da próxima página; null na última"
                         }
                       },
                       "required": [
@@ -4550,7 +4551,7 @@
             }
           },
           "400": {
-            "description": "Sem contact_id nem deal_id, ou os dois; filtro invÃ¡lido",
+            "description": "Sem contact_id nem deal_id, ou os dois; filtro inválido",
             "content": {
               "application/json": {
                 "schema": {
@@ -4568,7 +4569,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4586,7 +4587,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -4604,7 +4605,7 @@
             }
           },
           "404": {
-            "description": "Contato ou negÃ³cio nÃ£o encontrado",
+            "description": "Contato ou negócio não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4622,7 +4623,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4673,7 +4674,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido; sem contact_id nem deal_id; contato ou negÃ³cio que nÃ£o Ã© da organizaÃ§Ã£o",
+            "description": "Campo inválido; sem contact_id nem deal_id; contato ou negócio que não é da organização",
             "content": {
               "application/json": {
                 "schema": {
@@ -4691,7 +4692,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4709,7 +4710,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -4727,7 +4728,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4753,7 +4754,7 @@
           "CRM"
         ],
         "summary": "Listar os campos personalizados",
-        "description": "Os campos ativos da organizaÃ§Ã£o (os arquivados nÃ£o vÃªm), na ordem da posiÃ§Ã£o. Ã a definiÃ§Ã£o: os valores ficam em custom_fields de cada contato e negÃ³cio.",
+        "description": "Os campos ativos da organização (os arquivados não vêm), na ordem da posição. É a definição: os valores ficam em custom_fields de cada contato e negócio.",
         "security": [
           {
             "ApiKey": []
@@ -4768,7 +4769,7 @@
                 "company",
                 "deal"
               ],
-              "description": "SÃ³ os desta entidade (sem ele, de todas)"
+              "description": "Só os desta entidade (sem ele, de todas)"
             },
             "required": false,
             "name": "entity",
@@ -4798,7 +4799,7 @@
             }
           },
           "400": {
-            "description": "Entidade invÃ¡lida",
+            "description": "Entidade inválida",
             "content": {
               "application/json": {
                 "schema": {
@@ -4816,7 +4817,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4834,7 +4835,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:read",
+            "description": "A chave não tem o escopo crm:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -4852,7 +4853,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4876,7 +4877,7 @@
           "CRM"
         ],
         "summary": "Criar ou atualizar um campo personalizado pela chave",
-        "description": "Upsert pela chave dentro da entidade: sem campo ativo com a chave, cria (201); com a chave e o MESMO tipo, atualiza o rÃ³tulo, as opÃ§Ãµes e agent_writable (200); com a chave e OUTRO tipo, 409 (o tipo nunca muda). Chave de campo arquivado tambÃ©m Ã© 409: a chave nÃ£o se reaproveita. AtÃ© 50 campos ativos por entidade (409). Sem key, ela sai do rÃ³tulo. Depois de criado, o campo vale em custom_fields de POST e PATCH em /contacts e /deals.",
+        "description": "Upsert pela chave dentro da entidade: sem campo ativo com a chave, cria (201); com a chave e o MESMO tipo, atualiza o rótulo, as opções e agent_writable (200); com a chave e OUTRO tipo, 409 (o tipo nunca muda). Chave de campo arquivado também é 409: a chave não se reaproveita. Até 50 campos ativos por entidade (409). Sem key, ela sai do rótulo. Depois de criado, o campo vale em custom_fields de POST e PATCH em /contacts e /deals.",
         "security": [
           {
             "ApiKey": []
@@ -4894,7 +4895,7 @@
         },
         "responses": {
           "200": {
-            "description": "JÃ¡ existia com o mesmo tipo: atualizado (created: false)",
+            "description": "Já existia com o mesmo tipo: atualizado (created: false)",
             "content": {
               "application/json": {
                 "schema": {
@@ -4938,7 +4939,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido; select sem options; options em outro tipo; chave fora do formato",
+            "description": "Campo inválido; select sem options; options em outro tipo; chave fora do formato",
             "content": {
               "application/json": {
                 "schema": {
@@ -4956,7 +4957,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -4974,7 +4975,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -4992,7 +4993,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado; a chave jÃ¡ Ã© de um campo de outro tipo ou arquivado; ou a entidade jÃ¡ tem 50 campos ativos",
+            "description": "O CRM está desligado; a chave já é de um campo de outro tipo ou arquivado; ou a entidade já tem 50 campos ativos",
             "content": {
               "application/json": {
                 "schema": {
@@ -5018,7 +5019,7 @@
           "CRM"
         ],
         "summary": "Alterar um campo personalizado",
-        "description": "O rÃ³tulo, as opÃ§Ãµes (sÃ³ na seleÃ§Ã£o), a posiÃ§Ã£o e se o agente preenche. A chave, o tipo e a entidade nÃ£o mudam.",
+        "description": "O rótulo, as opções (só na seleção), a posição e se o agente preenche. A chave, o tipo e a entidade não mudam.",
         "security": [
           {
             "ApiKey": []
@@ -5057,7 +5058,7 @@
             }
           },
           "400": {
-            "description": "Campo invÃ¡lido, corpo vazio ou options num campo que nÃ£o Ã© de seleÃ§Ã£o",
+            "description": "Campo inválido, corpo vazio ou options num campo que não é de seleção",
             "content": {
               "application/json": {
                 "schema": {
@@ -5075,7 +5076,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -5093,7 +5094,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -5111,7 +5112,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado (ou arquivado)",
+            "description": "Não encontrado (ou arquivado)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5129,7 +5130,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5153,7 +5154,7 @@
           "CRM"
         ],
         "summary": "Arquivar um campo personalizado",
-        "description": "O campo some da lista e da conferÃªncia dos valores; os valores jÃ¡ gravados ficam nos contatos e negÃ³cios. A chave nÃ£o pode ser recriada.",
+        "description": "O campo some da lista e da conferência dos valores; os valores já gravados ficam nos contatos e negócios. A chave não pode ser recriada.",
         "security": [
           {
             "ApiKey": []
@@ -5175,7 +5176,7 @@
             "description": "Arquivado"
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -5193,7 +5194,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo crm:write",
+            "description": "A chave não tem o escopo crm:write",
             "content": {
               "application/json": {
                 "schema": {
@@ -5211,7 +5212,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado (ou jÃ¡ arquivado)",
+            "description": "Não encontrado (ou já arquivado)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5229,7 +5230,7 @@
             }
           },
           "409": {
-            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "description": "O CRM está desligado na organização (ligue no painel, em CRM > Configurações)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5259,13 +5260,13 @@
             "ApiKey": []
           }
         ],
-        "summary": "Dispara uma automaÃ§Ã£o com o gatilho Chamada pela nossa API",
-        "description": "Roda a automaÃ§Ã£o (ligada, com o gatilho Chamada pela nossa API) para o contato da chamada: contact.phone acha ou cria o contato no CRM (no contato que jÃ¡ existe, name e email da chamada atualizam o cadastro); contact_id usa um que jÃ¡ existe. O deal_id Ã© conferido antes: negÃ³cio que nÃ£o Ã© do contato recusa a chamada sem criar nada. Os campos de data viram as marcaÃ§Ãµes {{gatilho.dados.<chave>}}. Exige a Idempotency-Key: repetir a chamada com a mesma chave nÃ£o dispara de novo. O fim da execuÃ§Ã£o chega pelos webhooks automation.run.completed e automation.run.failed.",
+        "summary": "Dispara uma automação com o gatilho Chamada pela nossa API",
+        "description": "Roda a automação (ligada, com o gatilho Chamada pela nossa API) para o contato da chamada: contact.phone acha ou cria o contato no CRM (no contato que já existe, name e email da chamada atualizam o cadastro); contact_id usa um que já existe. O deal_id é conferido antes: negócio que não é do contato recusa a chamada sem criar nada. Os campos de data viram as marcações {{gatilho.dados.<chave>}}. Exige a Idempotency-Key: repetir a chamada com a mesma chave não dispara de novo. O fim da execução chega pelos webhooks automation.run.completed e automation.run.failed.",
         "parameters": [
           {
             "schema": {
               "type": "string",
-              "description": "O id da automaÃ§Ã£o (o do painel, em AutomaÃ§Ãµes)"
+              "description": "O id da automação (o do painel, em Automações)"
             },
             "required": true,
             "name": "id",
@@ -5274,7 +5275,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "ObrigatÃ³rio: de 8 a 128 caracteres (letras, nÃºmeros, . _ : -). Um UUID serve"
+              "description": "Obrigatório: de 8 a 128 caracteres (letras, números, . _ : -). Um UUID serve"
             },
             "required": false,
             "name": "idempotency-key",
@@ -5293,7 +5294,7 @@
         },
         "responses": {
           "202": {
-            "description": "Aceita: a automaÃ§Ã£o vai rodar para o contato",
+            "description": "Aceita: a automação vai rodar para o contato",
             "content": {
               "application/json": {
                 "schema": {
@@ -5303,7 +5304,7 @@
             }
           },
           "400": {
-            "description": "Corpo invÃ¡lido, telefone fora do E.164, Idempotency-Key ausente ou invÃ¡lida, ou negÃ³cio que nÃ£o Ã© do contato",
+            "description": "Corpo inválido, telefone fora do E.164, Idempotency-Key ausente ou inválida, ou negócio que não é do contato",
             "content": {
               "application/json": {
                 "schema": {
@@ -5321,7 +5322,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -5339,7 +5340,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo automations:trigger, ou o limite de contatos do plano foi atingido (contato novo)",
+            "description": "A chave não tem o escopo automations:trigger, ou o limite de contatos do plano foi atingido (contato novo)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5357,7 +5358,7 @@
             }
           },
           "404": {
-            "description": "AutomaÃ§Ã£o ou contato nÃ£o encontrado nesta organizaÃ§Ã£o",
+            "description": "Automação ou contato não encontrado nesta organização",
             "content": {
               "application/json": {
                 "schema": {
@@ -5375,7 +5376,7 @@
             }
           },
           "409": {
-            "description": "A automaÃ§Ã£o nÃ£o estÃ¡ ligada, nÃ£o tem o gatilho Chamada pela nossa API, ou o CRM estÃ¡ desligado",
+            "description": "A automação não está ligada, não tem o gatilho Chamada pela nossa API, ou o CRM está desligado",
             "content": {
               "application/json": {
                 "schema": {
@@ -5393,7 +5394,7 @@
             }
           },
           "503": {
-            "description": "O limite de contatos do plano nÃ£o pÃ´de ser verificado (contato novo). Nada foi disparado; repita depois",
+            "description": "O limite de contatos do plano não pôde ser verificado (contato novo). Nada foi disparado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -5418,7 +5419,7 @@
         "tags": [
           "Meetings"
         ],
-        "summary": "Listar reuniÃµes que os agentes marcaram",
+        "summary": "Listar reuniões que os agentes marcaram",
         "security": [
           {
             "ApiKey": []
@@ -5428,7 +5429,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -5437,7 +5438,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -5476,7 +5477,7 @@
               "type": "string",
               "minLength": 1,
               "maxLength": 64,
-              "description": "Filtrar pela ligaÃ§Ã£o: a reuniÃ£o marcada nela ou cujo lembrete foi ela (call_id ou reminder.call_id)"
+              "description": "Filtrar pela ligação: a reunião marcada nela ou cujo lembrete foi ela (call_id ou reminder.call_id)"
             },
             "required": false,
             "name": "call_id",
@@ -5486,7 +5487,7 @@
             "schema": {
               "type": "string",
               "format": "date-time",
-              "description": "InÃ­cio da reuniÃ£o a partir de (ISO 8601 com fuso, ex: 2026-11-01T00:00:00-03:00)"
+              "description": "Início da reunião a partir de (ISO 8601 com fuso, ex: 2026-11-01T00:00:00-03:00)"
             },
             "required": false,
             "name": "from",
@@ -5496,7 +5497,7 @@
             "schema": {
               "type": "string",
               "format": "date-time",
-              "description": "InÃ­cio da reuniÃ£o atÃ© (ISO 8601 com fuso, ex: 2026-11-30T23:59:59-03:00)"
+              "description": "Início da reunião até (ISO 8601 com fuso, ex: 2026-11-30T23:59:59-03:00)"
             },
             "required": false,
             "name": "to",
@@ -5518,7 +5519,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de reuniÃµes",
+            "description": "Lista de reuniões",
             "content": {
               "application/json": {
                 "schema": {
@@ -5559,7 +5560,7 @@
             }
           },
           "400": {
-            "description": "Filtro invÃ¡lido (status, agent_id, call_id, from, to, order), page ou limit que nÃ£o Ã© inteiro, ou page acima do mÃ¡ximo",
+            "description": "Filtro inválido (status, agent_id, call_id, from, to, order), page ou limit que não é inteiro, ou page acima do máximo",
             "content": {
               "application/json": {
                 "schema": {
@@ -5577,7 +5578,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -5595,7 +5596,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo meetings:read",
+            "description": "A chave não tem o escopo meetings:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -5620,7 +5621,7 @@
         "tags": [
           "Meetings"
         ],
-        "summary": "Detalhes de uma reuniÃ£o",
+        "summary": "Detalhes de uma reunião",
         "security": [
           {
             "ApiKey": []
@@ -5630,7 +5631,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "ID da reuniÃ£o (UUID)"
+              "description": "ID da reunião (UUID)"
             },
             "required": true,
             "name": "id",
@@ -5639,7 +5640,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Detalhes da reuniÃ£o",
+            "description": "Detalhes da reunião",
             "content": {
               "application/json": {
                 "schema": {
@@ -5649,7 +5650,7 @@
             }
           },
           "403": {
-            "description": "A chave nÃ£o tem o escopo meetings:read",
+            "description": "A chave não tem o escopo meetings:read",
             "content": {
               "application/json": {
                 "schema": {
@@ -5667,7 +5668,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrada",
+            "description": "Não encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -5692,7 +5693,7 @@
         "tags": [
           "Webhooks"
         ],
-        "summary": "Listar webhooks da organizaÃ§Ã£o",
+        "summary": "Listar webhooks da organização",
         "security": [
           {
             "ApiKey": []
@@ -5756,7 +5757,7 @@
             }
           },
           "401": {
-            "description": "NÃ£o autenticado",
+            "description": "Não autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -5827,13 +5828,13 @@
         },
         "responses": {
           "201": {
-            "description": "Webhook criado. O secret sÃ³ Ã© exibido uma vez.",
+            "description": "Webhook criado. O secret só é exibido uma vez.",
             "headers": {
               "X-Request-Id": {
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -5882,7 +5883,7 @@
             }
           },
           "400": {
-            "description": "Bad Request: campo invÃ¡lido ou JSON malformado no corpo da requisiÃ§Ã£o",
+            "description": "Bad Request: campo inválido ou JSON malformado no corpo da requisição",
             "content": {
               "application/json": {
                 "schema": {
@@ -5900,7 +5901,7 @@
             }
           },
           "413": {
-            "description": "Corpo da requisiÃ§Ã£o acima do teto de 1 MB",
+            "description": "Corpo da requisição acima do teto de 1 MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -5944,7 +5945,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Detalhes do webhook com Ãºltimas entregas",
+            "description": "Detalhes do webhook com últimas entregas",
             "content": {
               "application/json": {
                 "schema": {
@@ -6034,7 +6035,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -6120,7 +6121,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -6169,7 +6170,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -6187,7 +6188,7 @@
             }
           },
           "413": {
-            "description": "Corpo da requisiÃ§Ã£o acima do teto de 1 MB",
+            "description": "Corpo da requisição acima do teto de 1 MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -6229,13 +6230,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Webhook excluÃ­do",
+            "description": "Webhook excluído",
             "headers": {
               "X-Request-Id": {
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -6257,7 +6258,7 @@
             }
           },
           "404": {
-            "description": "NÃ£o encontrado",
+            "description": "Não encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -6301,7 +6302,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
+              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -6310,7 +6311,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -6424,7 +6425,7 @@
             }
           },
           "400": {
-            "description": "page ou limit que nÃ£o Ã© inteiro, ou page acima do mÃ¡ximo",
+            "description": "page ou limit que não é inteiro, ou page acima do máximo",
             "content": {
               "application/json": {
                 "schema": {
@@ -6442,7 +6443,7 @@
             }
           },
           "404": {
-            "description": "Webhook nÃ£o encontrado",
+            "description": "Webhook não encontrado",
             "content": {
               "application/json": {
                 "schema": {
