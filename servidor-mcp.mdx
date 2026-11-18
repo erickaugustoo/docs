@@ -3,7 +3,7 @@ title: "Servidor MCP"
 description: "Endereço, login, permissões e ferramentas do servidor MCP da Integra, com o passo a passo para o Claude Code."
 ---
 
-A Integra tem um servidor MCP (Model Context Protocol). Por ele, o Claude, o Claude Code e o ChatGPT consultam a sua operação e fazem ações na sua conta com o seu login, só na organização que você escolher ao conectar.
+A Integra tem um servidor MCP (Model Context Protocol). Por ele, o Claude, o Claude Code e o ChatGPT consultam a sua operação, cuidam do CRM e das Automações e fazem ações na sua conta com o seu login, só na organização que você escolher ao conectar.
 
 Para usar no Claude ou no ChatGPT, siga [Claude e ChatGPT](/assistentes-de-ia). Esta página mostra como conectar o Claude Code e reúne os detalhes técnicos do servidor.
 
@@ -14,13 +14,13 @@ Para usar no Claude ou no ChatGPT, siga [Claude e ChatGPT](/assistentes-de-ia). 
 | Endereço | `https://mcp.useintegra.com.br/mcp` (sem barra no final) |
 | Transporte | Streamable HTTP |
 | Login | OAuth 2.1 com PKCE, na mesma conta do painel |
-| Aplicativos aceitos | Claude, Claude Code e ChatGPT |
+| Aplicativos aceitos | Claude, Claude Code, ChatGPT e outros clientes MCP que se identificam por um documento de metadados em `https` |
 | Token de acesso | Vale 1 hora, e o aplicativo renova sozinho |
 | Conexão sem uso | Depois de 30 dias parada, é preciso entrar de novo |
 | Validade da conexão | 90 dias desde a conexão, mesmo em uso. Depois, é preciso conectar de novo |
 
 <Note>
-  Outros clientes MCP ainda não conseguem se conectar: o servidor só aceita os aplicativos do Claude e do ChatGPT.
+  Qualquer aplicativo pode pedir a conexão, mas quem decide é você: a tela de permissão mostra o nome e o domínio do aplicativo. Confira os dois antes de clicar em **Permitir**.
 </Note>
 
 ## Conectar no Claude Code
@@ -63,37 +63,42 @@ Com `--scope project`, o Claude Code grava o servidor no `.mcp.json` do reposit�
 ```
 
 <Tip>
-  O Claude Code pede confirmação antes de cada ferramenta. Para pular a confirmação só nas consultas, coloque as ferramentas de consulta em `permissions.allow` no `.claude/settings.json`, uma por uma (por exemplo, `mcp__integra__buscar_historico`). As que criam, publicam ou enviam continuam pedindo confirmação.
+  O Claude Code pede confirmação antes de cada ferramenta. Para pular a confirmação só nas consultas, coloque as ferramentas de consulta em `permissions.allow` no `.claude/settings.json`, uma por uma (por exemplo, `mcp__integra__buscar_historico`). As que criam, publicam, enviam ou apagam continuam pedindo confirmação.
 </Tip>
 
 <Note>
-  No Claude e no Claude Code, o servidor não dispara ligações: `criar_campanha` aceita só WhatsApp, e `retentar_falhas` e `ligar_para_testar_agente` não aparecem. As campanhas de voz, a repetição de falhas e o teste por ligação ficam no ChatGPT e no painel.
+  No Claude e no Claude Code, o servidor não dispara ligações: `criar_campanha` aceita só WhatsApp, e `retentar_falhas` e `ligar_para_testar_agente` não aparecem. Pelo mesmo motivo, `configurar_lembrete_de_reuniao` ajusta só o lembrete pelo WhatsApp, `publicar_automacao` e `retomar_automacao` recusam a automação que tem bloco Ligar, e `tentar_de_novo` não repete um passo de ligação. As campanhas de voz, a repetição de falhas, o teste por ligação, o lembrete por ligação e as automações que ligam ficam no ChatGPT e no painel.
 </Note>
 
 ## Permissões
 
 Cada grupo de ferramentas depende de um escopo OAuth. Na tela de conexão, você escolhe quais liberar antes de clicar em **Permitir**: a consulta (`integra:read`) vem sempre, e as outras vêm marcadas para você desmarcar o que não quiser. O aplicativo só recebe as ferramentas dos escopos liberados.
 
-| Escopo | O que libera |
-| --- | --- |
-| `integra:read` | As 25 ferramentas de consulta. Sempre incluído |
-| `integra:campaigns` | Criar e cancelar campanhas e repetir as falhas |
-| `integra:agents` | Criar, configurar, publicar, ativar e desativar agentes, vincular números, definir o horário da agenda e ligar para testar |
-| `integra:inbox` | Assumir, devolver e responder conversas do Inbox |
+| Escopo | O que libera | Ferramentas |
+| --- | --- | --- |
+| `integra:read` | Consultar resultados, ligações, conversas, agentes, campanhas, reuniões, métricas e configurações. Sempre incluído | 27 |
+| `integra:campaigns` | Criar e cancelar campanhas e repetir as falhas | 3 (2 no Claude) |
+| `integra:agents` | Criar, configurar, publicar, ativar e desativar agentes, vincular números, adicionar vozes da biblioteca, definir o horário da agenda e o lembrete de reunião, e ligar para testar | 10 (9 no Claude) |
+| `integra:inbox` | Assumir, devolver e responder conversas do Inbox | 2 |
+| `integra:crm` | Ver, alterar e apagar contatos, empresas, negócios, tarefas e anotações, configurar funis, colunas personalizadas e o CRM, e montar, publicar e acompanhar as Automações | 46 |
 
-A tela oferece os escopos que o aplicativo pediu; se ele não pedir nenhum, oferece os quatro. O seu papel na organização continua valendo: o que você não pode fazer no painel, o servidor também não faz.
+O CRM e as Automações ficam inteiros em `integra:crm`, inclusive a consulta: sem esse escopo, o aplicativo não vê contatos, negócios nem automações.
+
+A tela oferece os escopos que o aplicativo pediu; se ele não pedir nenhum, oferece os cinco. Para saber o que uma conexão pode fazer e o que falta liberar, use `minha_conta`. Para liberar o que falta, desconecte e conecte de novo, marcando a permissão.
+
+O seu papel na organização continua valendo: o que você não pode fazer no painel, o servidor também não faz.
 
 ## Ferramentas
 
-São 38 ferramentas. No Claude e no Claude Code são 36, porque `retentar_falhas` e `ligar_para_testar_agente` não aparecem (veja a nota acima).
+São 88 ferramentas: 27 de consulta, 3 de campanhas, 10 de agentes, 2 do Inbox e 46 do CRM e das Automações. No Claude e no Claude Code são 86, porque `retentar_falhas` e `ligar_para_testar_agente` não aparecem (veja a nota acima). No ChatGPT aparecem as 88.
 
-As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o link da tela correspondente no painel. Nenhuma resposta mostra créditos, custo nem saldo: o consumo fica no painel.
+As respostas vêm em JSON, e os horários vêm em UTC (ISO 8601, terminados em `Z`). Na maioria das ferramentas, a resposta que dá certo traz no campo `painel` o link da tela correspondente no painel. Nenhuma resposta mostra créditos, custo nem saldo: o consumo fica no painel. O valor de um negócio do CRM é dado seu e aparece normalmente.
 
 ### Consulta (`integra:read`)
 
 | Ferramenta | O que faz |
 | --- | --- |
-| `minha_conta` | Quem está conectado, a organização, o papel e os projetos |
+| `minha_conta` | Quem está conectado, a organização, o papel, os projetos e o que a conexão pode fazer, com o que falta liberar |
 | `resumo_da_operacao` | Indicadores do período, os últimos 7 dias e o que está em andamento agora |
 | `saldo_e_limites` | Limites do plano e o uso atual de cada um |
 | `buscar_historico` | Ligações e conversas de texto com o desfecho de cada uma, com filtro por período, tipo e agente |
@@ -103,19 +108,21 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 | `ver_agente` | Canais, modelo, números, ferramentas e bases de um agente, com a versão do rascunho. Na voz, mostra as variáveis do agente e quais são obrigatórias |
 | `desempenho_dos_agentes` | Atendimentos, duração e desfechos de cada agente no período |
 | `listar_campanhas` | Campanhas de voz e de WhatsApp, com o status e as contagens |
-| `ver_campanha` | Detalhe de uma campanha e uma página dos destinatários. Nas de WhatsApp, o número de origem vem em `canalId` |
+| `ver_campanha` | Detalhe de uma campanha e uma página dos destinatários, com o estado e o resultado de cada um. Nas de WhatsApp, o número de origem vem em `canalId` |
 | `listar_templates_do_whatsapp` | Templates de WhatsApp e o status de aprovação de cada um |
 | `listar_numeros_do_whatsapp` | Números de WhatsApp conectados na organização, com o `canalId` de cada um e o agente que atende |
 | `listar_conversas` | Conversas do Inbox (WhatsApp, Instagram e Messenger), quem atende cada uma e o número de origem em `canalId` |
-| `ver_mensagens` | Mensagens de uma conversa do Inbox, das mais recentes para as mais antigas |
+| `ver_mensagens` | Mensagens de uma conversa do Inbox, das mais recentes para as mais antigas, com as transferências e quem assumiu |
+| `listar_reunioes` | Reuniões que os agentes marcaram no Google Agenda, com o status, o contato e o lembrete de confirmação. Filtra por período, status, agente, conversa ou ligação. Sem período, mostra as de hoje em diante |
 | `listar_metricas` | Catálogo das métricas e dimensões |
 | `consultar_metricas` | Consulta as métricas do catálogo, com período, agrupamento e filtros |
 | `listar_dashboards` | Dashboards salvos na organização |
 | `ver_dashboard` | Os números de um dashboard, peça por peça. Sem período, mostra os últimos 7 dias, como o painel |
 | `listar_vozes` | Vozes para os agentes de voz, com nome, gênero, idioma e etiquetas |
+| `buscar_vozes_da_biblioteca` | Vozes prontas em português na biblioteca de um modelo, com filtro por gênero e por texto. As que a organização já adicionou vêm marcadas |
 | `listar_modelos` | Modelos de voz e de texto para os agentes |
-| `listar_ferramentas` | Ferramentas cadastradas na organização (integrações e chamadas HTTP). Nas do Google Agenda, mostra o horário em que os agentes podem marcar reuniões |
-| `listar_bases` | Bases de conhecimento e quantos documentos cada uma tem |
+| `listar_ferramentas` | Ferramentas cadastradas na organização (integrações e chamadas HTTP), com o projeto de cada uma. Nas do Google Agenda, mostra o horário em que os agentes podem marcar reuniões, a opção de feriados e o lembrete de reunião |
+| `listar_bases` | Bases de conhecimento, com o projeto de cada uma e quantos documentos têm |
 | `perguntar_a_base` | Os trechos que uma base de conhecimento devolve para uma pergunta |
 | `listar_numeros` | Números de telefone e os agentes que atendem cada um |
 
@@ -123,7 +130,7 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 
 | Ferramenta | O que faz |
 | --- | --- |
-| `criar_campanha` | Cria uma campanha de voz ou de WhatsApp para até 500 contatos. As ligações e mensagens vão para pessoas reais e gastam créditos. No WhatsApp, se a organização tem mais de um número, informe o `canalId` do número de origem (o `listar_numeros_do_whatsapp` mostra) |
+| `criar_campanha` | Cria uma campanha de voz ou de WhatsApp para até 500 contatos. As ligações e mensagens vão para pessoas reais e gastam créditos. Na voz, cada contato precisa trazer o valor das variáveis obrigatórias do agente (o `ver_agente` mostra). No WhatsApp, se a organização tem mais de um número, informe o `canalId` do número de origem (o `listar_numeros_do_whatsapp` mostra) |
 | `cancelar_campanha` | Cancela uma campanha. Cancelar não tem volta |
 | `retentar_falhas` | Liga de novo ou reenvia para os destinatários que falharam numa campanha. Gasta créditos |
 
@@ -131,14 +138,16 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 
 | Ferramenta | O que faz |
 | --- | --- |
-| `criar_agente` | Cria um agente de voz ou de texto. Ele só atende depois de configurado e publicado |
-| `editar_instrucoes_do_agente` | Grava novas instruções no rascunho do agente |
-| `editar_configuracao_do_agente` | Troca a voz, o modelo, as ferramentas, as bases ou a primeira fala no rascunho |
+| `criar_agente` | Cria um agente de voz ou de texto. Ele só atende depois de configurado e publicado. No agente de voz, o projeto define as ferramentas e as bases que ele pode usar |
+| `editar_instrucoes_do_agente` | Grava novas instruções no rascunho do agente, no lugar das atuais, e devolve um resumo do que mudou |
+| `editar_configuracao_do_agente` | Troca a voz, o modelo, as ferramentas, as bases, a primeira fala, a direção (entrada, saída ou ambos) ou as variáveis da ligação no rascunho. As listas informadas substituem as atuais |
 | `publicar_agente` | Publica o rascunho. As mudanças passam a valer nas próximas ligações e conversas |
-| `ativar_ou_desativar_agente` | Liga ou desliga um agente. Desligado, ele para de atender ligações e conversas novas |
+| `ativar_ou_desativar_agente` | Liga ou desliga um agente. Desligado, ele sai dos números e para de atender ligações e conversas novas. Campanhas de voz em andamento continuam: para parar, use `cancelar_campanha` |
 | `vincular_numero_ao_agente` | Coloca o agente para atender um número, junto com os que já atendem |
-| `definir_horario_da_agenda` | Define os dias e horários em que os agentes de voz e de texto podem marcar e remarcar reuniões no Google Agenda, em todas as ferramentas do Google Agenda da organização ou só nas de um projeto. Cancelar reunião nunca é barrado |
-| `ligar_para_testar_agente` | O agente liga para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. Gasta créditos |
+| `adicionar_voz_da_biblioteca` | Adiciona à organização uma voz da biblioteca (o id vem de `buscar_vozes_da_biblioteca`). A voz fica pronta na hora e passa a aparecer em `listar_vozes`. Criar uma voz por descrição e clonar a voz de uma pessoa ficam no Voice Studio do painel |
+| `definir_horario_da_agenda` | Define os dias e horários em que os agentes de voz e de texto podem marcar e remarcar reuniões no Google Agenda, em todas as ferramentas do Google Agenda da organização ou só nas de um projeto. Também liga ou desliga a opção de não marcar em feriado nacional. Cancelar reunião nunca é barrado |
+| `configurar_lembrete_de_reuniao` | Liga, desliga ou ajusta o lembrete que o contato recebe antes da reunião marcada pelo agente: no WhatsApp, com os botões Confirmo e Preciso remarcar, ou numa ligação do agente de voz. A antecedência é de 1, 2, 4 ou 24 horas |
+| `ligar_para_testar_agente` | O agente liga para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. Aceita valores das variáveis do agente só para essa ligação. Gasta créditos |
 
 ### Inbox (`integra:inbox`)
 
@@ -147,11 +156,134 @@ As respostas vêm em JSON. Quando dá certo, a resposta traz no campo `painel` o
 | `assumir_ou_devolver_conversa` | Passa a conversa para a equipe (a IA para de responder) ou devolve para a IA |
 | `responder_conversa` | Manda uma mensagem de texto numa conversa, em nome da equipe. A mensagem não tem volta |
 
+### CRM (`integra:crm`)
+
+São 33 ferramentas, de consulta e de ação. Com o CRM desligado na organização, as de contatos, empresas, negócios, tarefas, funis e colunas respondem que ele está desligado, sem erro. Quem é administrador liga com `ativar_crm` ou em **CRM**, no painel.
+
+#### Contatos e empresas
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `buscar_contatos` | Lista os contatos, os mais novos primeiro. Busca por parte do nome, do e-mail ou do telefone, pelo telefone exato ou por uma etiqueta. Cada contato traz as colunas personalizadas preenchidas |
+| `ver_contato` | Um contato com as colunas personalizadas, os negócios abertos, as tarefas abertas e as últimas atividades |
+| `salvar_contato` | Cria ou altera um contato. Sem `id` e com telefone, altera o contato que já tem esse telefone ou cria um novo. Aceita etiquetas, a marca de não contatar (as campanhas pulam esse contato) e `campos`. Criar respeita o limite de contatos do plano |
+| `buscar_empresas` | Lista as empresas, com busca por parte do nome, do CNPJ ou do domínio |
+| `ver_empresa` | Uma empresa com os contatos e os negócios ligados a ela |
+| `salvar_empresa` | Cria ou altera uma empresa: nome, CNPJ, domínio, telefone e etiquetas. Se já existe uma com o mesmo nome, devolve essa e não cria outra |
+| `ver_linha_do_tempo` | A linha do tempo de um contato, de um negócio ou de uma empresa, da mais recente para a mais antiga: notas, ligações, mensagens e mudanças de etapa |
+
+#### Negócios e funis
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `listar_funis` | Os funis com as etapas na ordem: nome, tipo (aberta, ganho ou perdido) e chance de fechar |
+| `listar_negocios` | Lista os negócios, com filtro por funil, etapa, status, contato e parados na etapa há mais de N dias. Quem é vendedor vê só os próprios negócios, se a organização ligou essa regra |
+| `ver_negocio` | Um negócio com o contato, a etapa, o valor, a previsão, as tarefas abertas e as últimas atividades |
+| `criar_negocio` | Cria um negócio. Sem funil e etapa, entra na primeira etapa aberta do funil padrão. Aceita contato, empresa, valor em reais, previsão de fechamento, etiquetas e `campos` |
+| `editar_negocio` | Altera o título, o contato, a empresa, o valor, a previsão e as etiquetas de um negócio. Só muda o que você informar |
+| `mover_negocio` | Muda o negócio de etapa ou marca como ganho ou perdido, com o motivo da perda. A mudança fica na linha do tempo |
+| `listar_modelos_de_funil` | Os modelos de funil por setor, com as etapas, a etapa do objetivo e as colunas que cada modelo sugere |
+| `criar_funil` | Cria um funil com as etapas que você der ou a partir de um modelo de setor. Até 20 etapas por funil e 20 funis. Só administrador |
+| `editar_etapas_do_funil` | Troca a lista inteira de etapas de um funil: a lista enviada vira a ordem nova. Etapa com negócios não pode sair nem mudar de tipo. Só administrador |
+| `alterar_funil` | Muda o nome, define o funil padrão, arquiva ou devolve o funil, define se os agentes podem mover os negócios e a etapa do objetivo. Arquivar não apaga os negócios. Só administrador |
+| `trocar_modelo_do_funil` | Troca as etapas de um funil pelas de um modelo de setor. Só funciona em funil sem nenhum negócio. Só administrador |
+
+#### Notas e tarefas
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `anotar` | Registra uma nota na linha do tempo de um contato, de um negócio ou dos dois |
+| `listar_tarefas` | Lista as tarefas abertas, concluídas ou vencidas, de todos ou só as suas, com filtro por contato e por negócio |
+| `criar_tarefa` | Cria uma tarefa para você, ligada a um contato, a um negócio ou aos dois, com prazo se quiser |
+| `editar_tarefa` | Altera, conclui ou reabre uma tarefa |
+
+#### Colunas personalizadas
+
+As colunas personalizadas guardam o que é só do seu negócio, como o convênio de um paciente ou a data do retorno. Cada coluna pertence a contatos, empresas ou negócios e tem um tipo: texto, número, data, seleção ou sim/não. Nas ferramentas, elas aparecem como `campos`.
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `listar_campos_do_crm` | As colunas ativas de contatos, empresas e negócios: chave, rótulo, tipo, opções da seleção e se o agente preenche |
+| `salvar_campo_do_crm` | Cria ou edita uma coluna. Para criar, informe onde ela fica (contato, empresa ou negócio), o rótulo e o tipo. A chave sai do rótulo. Numa coluna que já existe, mudam o rótulo, as opções e se o agente preenche; a chave e o tipo não mudam. Contatos, empresas e negócios aceitam até 50 colunas ativas cada. Só administrador |
+| `arquivar_campo_do_crm` | Arquiva uma coluna: ela some da lista e deixa de valer nos registros novos. Os valores já gravados ficam. Pelo servidor não dá para desarquivar. Só administrador |
+
+Para preencher as colunas, `salvar_contato` e `criar_negocio` aceitam `campos`, um objeto `{ chave: valor }`. Este é um exemplo de entrada do `salvar_contato`:
+
+```json
+{
+  "telefone": "+5511999998888",
+  "campos": {
+    "convenio": "Unimed",
+    "retorno": "2026-12-01",
+    "primeira_consulta": true
+  }
+}
+```
+
+- A chave é a da coluna, que o `listar_campos_do_crm` mostra.
+- O valor segue o tipo da coluna: texto (até 500 caracteres), número, data no formato `AAAA-MM-DD`, uma das opções da seleção, `true` ou `false`.
+- `null` tira o valor de uma coluna. O que não vier fica como está.
+- Chave que não existe ou valor de outro tipo é recusado.
+
+Na leitura, `buscar_contatos` e `ver_contato` devolvem `campos` em cada contato, como uma lista de `chave` e `valor`. Os negócios também trazem `campos` nas respostas. `editar_negocio` e `salvar_empresa` não recebem `campos`.
+
+Num assistente, basta pedir: "Crie a coluna Convênio nos contatos, com as opções Unimed, Amil e Particular, e marque Unimed na Ana."
+
+#### Configuração do CRM
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `ativar_crm` | Liga o CRM da organização. Na primeira vez, cria o funil padrão do modelo escolhido, com as colunas que o modelo sugere. Com o CRM ligado, os agentes passam a criar e atualizar contatos sozinhos. Só administrador |
+| `configurar_crm` | Liga ou desliga a criação automática de contatos pelos agentes e a regra de o vendedor ver só os próprios negócios. Só administrador |
+| `conectar_crm_integra` | Cria no projeto as 5 funções que o agente usa na conversa para ler e gravar o CRM: buscar contato, salvar contato, mover etapa, anotar e criar tarefa. Depois, inclua as funções no agente com `editar_configuracao_do_agente` e publique. Só administrador |
+
+#### Apagar
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `apagar_negocio` | Apaga um negócio de vez, com as notas que eram só dele. As tarefas, o contato e a empresa ficam |
+| `apagar_contato` | Apaga um contato de vez, com a linha do tempo, as tarefas e as execuções de automação dele. Os negócios ficam, sem o contato. Só administrador |
+| `apagar_empresa` | Apaga uma empresa. Os contatos e os negócios ficam, sem a empresa. Só administrador |
+| `apagar_nota` | Apaga uma nota ou outro registro feito à mão na linha do tempo. O que o agente ou o sistema registrou fica. Só quem registrou ou um administrador apaga |
+| `apagar_tarefa` | Apaga uma tarefa. Para só marcar como feita, use `editar_tarefa` |
+
+<Warning>
+  Apagar não tem volta. As ferramentas de apagar pedem ao assistente que mostre o que vai sair e espere a sua confirmação. Funil e coluna o servidor só arquiva, e os dados ficam.
+</Warning>
+
+### Automações (`integra:crm`)
+
+São 13 ferramentas. Uma automação é um fluxo que roda sozinho entre um atendimento e outro: um gatilho (um evento ou uma agenda) e os blocos que vêm depois, como ligar, enviar template de WhatsApp, esperar, mover de etapa e criar tarefa. O assistente monta a automação num arquivo em YAML ou JSON, com os nomes do que a sua organização tem.
+
+| Ferramenta | O que faz |
+| --- | --- |
+| `catalogo_de_automacoes` | O ponto de partida para montar uma automação: os gatilhos, os blocos, as marcações, os nomes do que a organização tem (funis, etapas, agentes, números, templates e ferramentas) e o formato do arquivo, com exemplos |
+| `listar_automacoes` | As automações, com o status (rascunho, ligada ou pausada), o gatilho, a versão publicada e as execuções dos últimos 7 dias |
+| `ver_automacao` | Uma automação com o status, o gatilho, os problemas do rascunho, o resumo dos passos e o arquivo do rascunho |
+| `criar_automacao` | Cria uma automação como rascunho, a partir do arquivo. Ela não roda até ser publicada. Se um nome do arquivo não casar com o que a organização tem, nada é criado e a resposta diz o que faltou. Só administrador |
+| `editar_automacao` | Troca o rascunho inteiro pelo arquivo enviado. A versão que está rodando só muda quando a automação é publicada de novo. Só administrador |
+| `simular_automacao` | Anda pelo rascunho e mostra o caminho que um contato faria em cada desfecho. Não liga, não envia e não grava nada |
+| `publicar_automacao` | Valida o rascunho e publica: a automação passa a rodar para contatos reais. Republicar interrompe as execuções em andamento da versão anterior. Conta no limite de automações ligadas do plano. Só administrador |
+| `pausar_automacao` | Pausa uma automação ligada e congela as execuções em andamento. Só administrador |
+| `retomar_automacao` | Volta a ligar uma automação pausada, e as execuções seguem de onde pararam. Só administrador |
+| `despublicar_automacao` | Tira a automação do ar e volta para rascunho. As execuções em andamento param. Só administrador |
+| `listar_execucoes_da_automacao` | Onde está cada contato nas automações, com filtro por automação e por status. Com o status de erro, é a fila de erros, com o passo em que parou e o motivo |
+| `ver_execucao_da_automacao` | O caminho que uma execução fez, passo a passo, com o status e o motivo de cada um |
+| `tentar_de_novo` | Volta uma execução que terminou em erro para o passo em que parou. Corrija a causa antes. Só administrador |
+
+Fora do Claude e do Claude Code, publicar ou retomar uma automação que tem bloco Ligar, ou tentar de novo um passo de ligação, exige também o escopo `integra:campaigns`.
+
 ## Como as ações se comportam
 
 As edições de agente vão para o rascunho e só valem depois de `publicar_agente`. Passe a `versao` que o `ver_agente` mostra: se alguém mudou o rascunho no painel nesse meio tempo, a ferramenta não grava e pede para ler o agente de novo.
 
 Pedidos repetidos não executam duas vezes. A mesma `criar_campanha` ou `retentar_falhas` no mesmo dia devolve o que já foi feito. A mesma `criar_agente`, `ligar_para_testar_agente` ou `responder_conversa` em até 2 minutos não acontece de novo.
+
+No CRM, `salvar_contato` com um telefone que já está cadastrado altera esse contato em vez de criar outro, e `salvar_empresa` com o nome de uma empresa que já existe devolve essa empresa. Nas ferramentas de alterar, só muda o que você informar. As listas de etiquetas e de etapas substituem as atuais.
+
+As automações nascem e são editadas como rascunho. Só `publicar_automacao` e `retomar_automacao` fazem a automação rodar para contatos reais, e a versão no ar só muda quando você publica de novo. A exceção é o horário de atendimento: quando o arquivo enviado ao `editar_automacao` traz o horário, ele vale na hora. Sem horário no arquivo, a automação nasce com segunda a sexta, das 09:00 às 18:00, no horário de São Paulo, sem feriados nacionais. O servidor não apaga automação nem execução.
+
+As ferramentas marcadas com "Só administrador" seguem o seu papel na organização: sem ele, respondem que o papel não permite.
 
 Respostas muito grandes voltam cortadas, com um aviso. Nas listas, o campo `itensOmitidos` diz quantos itens ficaram de fora. Peça menos itens ou use os filtros.
 
@@ -165,6 +297,10 @@ Os erros voltam em português, prontos para mostrar a quem está usando: falta d
 | `responder_conversa` | 20 por minuto e 200 por hora |
 | `assumir_ou_devolver_conversa` | 30 por minuto |
 | `criar_campanha`, `retentar_falhas` e `ligar_para_testar_agente` | 5 por hora, cada uma |
+| `criar_automacao` | 20 por hora |
+| `editar_automacao` e `tentar_de_novo` | 30 por hora, cada uma |
+| `publicar_automacao` e `retomar_automacao` | 10 por hora, cada uma |
+| As cinco de apagar do CRM, somadas | 10 por minuto e 30 por hora |
 
 Passando do limite, a ferramenta não faz nada e responde quanto tempo falta para tentar de novo.
 
@@ -187,5 +323,9 @@ O servidor segue a especificação de autorização do MCP:
 - recurso protegido: `https://mcp.useintegra.com.br/.well-known/oauth-protected-resource/mcp`
 - servidor de autorização: `https://mcp.useintegra.com.br/.well-known/oauth-authorization-server`
 - o cliente se identifica por um documento de metadados (Client ID Metadata Document); não há registro dinâmico
+- o `client_id` é a URL `https` desse documento, que precisa trazer `client_id`, `client_name` e `redirect_uris`
+- o `redirect_uri` tem de ser `https`, ou `http` em loopback (`localhost` ou `127.0.0.1`)
 - PKCE com `S256` é obrigatório, e o parâmetro `resource`, quando enviado, tem de ser `https://mcp.useintegra.com.br/mcp`
+- os escopos são os cinco da tabela de Permissões; sem `scope` no pedido, a tela oferece todos
 - sem token válido, o `/mcp` responde `401` com o cabeçalho `WWW-Authenticate` apontando para os metadados
+- o `/mcp` aceita uma mensagem JSON-RPC por requisição, sem lote

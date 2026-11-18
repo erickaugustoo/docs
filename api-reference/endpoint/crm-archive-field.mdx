@@ -1,0 +1,11 @@
+---
+title: "Arquivar coluna"
+description: "Tira a coluna das telas e da conferência dos campos"
+openapi: "DELETE /api/v1/crm/fields/{id}"
+---
+
+A coluna some do painel e deixa de ser aceita em `custom_fields`. Os valores que já estavam gravados nos contatos e negócios continuam guardados. A resposta é `204`, sem corpo.
+
+<Warning>
+  Não há como desarquivar pela API, e a chave de uma coluna arquivada não pode ser usada de novo na mesma entidade. Para voltar a ter o dado, crie uma coluna com outra chave.
+</Warning>

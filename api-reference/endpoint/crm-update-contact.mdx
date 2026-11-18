@@ -1,0 +1,9 @@
+---
+title: "Alterar contato"
+description: "Altera um contato pelo id"
+openapi: "PATCH /api/v1/crm/contacts/{id}"
+---
+
+Envie só o que muda. `tags` substitui a lista inteira, e `custom_fields` segue as mesmas regras de [Criar ou atualizar contato](/api-reference/endpoint/crm-upsert-contact#colunas-personalizadas).
+
+Trocar o telefone para um número que já é de outro contato da organização responde `409`.

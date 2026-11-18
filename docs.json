@@ -55,6 +55,26 @@
             ]
           },
           {
+            "group": "CRM",
+            "pages": [
+              "api-reference/endpoint/crm-list-pipelines",
+              "api-reference/endpoint/crm-list-contacts",
+              "api-reference/endpoint/crm-get-contact",
+              "api-reference/endpoint/crm-upsert-contact",
+              "api-reference/endpoint/crm-update-contact",
+              "api-reference/endpoint/crm-list-deals",
+              "api-reference/endpoint/crm-get-deal",
+              "api-reference/endpoint/crm-create-deal",
+              "api-reference/endpoint/crm-update-deal",
+              "api-reference/endpoint/crm-list-activities",
+              "api-reference/endpoint/crm-create-note",
+              "api-reference/endpoint/crm-list-fields",
+              "api-reference/endpoint/crm-save-field",
+              "api-reference/endpoint/crm-update-field",
+              "api-reference/endpoint/crm-archive-field"
+            ]
+          },
+          {
             "group": "Webhooks",
             "pages": [
               "api-reference/endpoint/list-webhooks",

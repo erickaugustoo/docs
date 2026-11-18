@@ -1,9 +1,9 @@
 ---
 title: "Claude e ChatGPT"
-description: "Consulte resultados, ajuste agentes, cuide das campanhas e responda o Inbox da Integra direto no Claude e no ChatGPT."
+description: "Consulte resultados, ajuste agentes, cuide do CRM e das campanhas e responda o Inbox da Integra direto no Claude e no ChatGPT."
 ---
 
-Com o conector da Integra, você pergunta no Claude ou no ChatGPT como foi a operação, abre uma ligação ou uma conversa, ajusta um agente, cuida das campanhas e responde o Inbox sem sair do chat. O assistente usa a sua conta e enxerga só a organização que você escolher ao conectar.
+Com o conector da Integra, você pergunta no Claude ou no ChatGPT como foi a operação, abre uma ligação ou uma conversa, ajusta um agente, atualiza o CRM, monta uma automação, cuida das campanhas e responde o Inbox sem sair do chat. O assistente usa a sua conta e enxerga só a organização que você escolher ao conectar.
 
 Para o Claude Code e para a lista completa de ferramentas, veja [Servidor MCP](/servidor-mcp).
 
@@ -64,6 +64,12 @@ https://mcp.useintegra.com.br/mcp
 - "Cancela a campanha Reativação de outubro."
 - "Quais números de WhatsApp a gente tem conectados?"
 - "Deixa a agenda marcar reuniões só de segunda a sexta, das 9h às 18h."
+- "Quais reuniões os agentes marcaram para esta semana?"
+- "Quais negócios estão parados na mesma etapa há mais de 7 dias?"
+- "Cadastra a Ana Souza, telefone (11) 99999-8888, e cria um negócio de R$ 1.500 para ela."
+- "Move o negócio da Ana para Proposta e cria uma tarefa para eu ligar amanhã às 14h."
+- "Cria a coluna Convênio nos contatos, com as opções Unimed, Amil e Particular, e marca Unimed na Ana."
+- "Monta uma automação que, toda segunda às 9h, cria uma tarefa para cobrar as propostas paradas há mais de 3 dias. Antes de publicar, me mostra a simulação."
 
 ## O que o assistente consegue ver
 
@@ -73,12 +79,17 @@ Sem alterar nada, ele consulta:
 - o histórico de ligações e de conversas de texto, com o desfecho de cada uma;
 - o detalhe de uma ligação (resumo, resultado, intenção e sentimento; a transcrição só quando você pede) ou de uma conversa de texto;
 - os agentes, a configuração de cada um e o desempenho;
-- as vozes e os modelos que dá para usar nos agentes;
+- as vozes e os modelos que dá para usar nos agentes, e a biblioteca de vozes prontas;
 - as ferramentas e as bases de conhecimento da organização, inclusive os trechos que uma base devolve para uma pergunta;
 - os números de telefone e os agentes que atendem cada um;
+- as reuniões que os agentes marcaram no Google Agenda, com o status e o lembrete de confirmação;
 - as campanhas, os destinatários, os templates e os números de WhatsApp conectados;
 - as conversas do Inbox e as mensagens de cada uma;
-- as métricas e os dashboards salvos.
+- as métricas e os dashboards salvos;
+- no CRM, os contatos, as empresas, os negócios, os funis com as etapas, as tarefas, a linha do tempo de cada um e as colunas personalizadas;
+- as automações, o status de cada uma e por onde cada contato passou.
+
+O CRM e as Automações dependem da permissão do CRM, inclusive para consultar.
 
 O assistente não mostra créditos, custo nem saldo. Para acompanhar o consumo, use o painel.
 
@@ -93,7 +104,9 @@ Cada grupo de ações depende de uma permissão, que você vê na tela de conex�
     - Publicar o rascunho.
     - Ativar e desativar um agente.
     - Colocar um agente para atender um número.
-    - Definir os dias e horários em que os agentes podem marcar e remarcar reuniões no Google Agenda.
+    - Adicionar à organização uma voz da biblioteca de vozes.
+    - Definir os dias e horários em que os agentes podem marcar e remarcar reuniões no Google Agenda, e se eles marcam em feriado nacional.
+    - Ligar, desligar ou ajustar o lembrete que o contato recebe antes da reunião.
     - Ligar para um telefone de teste verificado da organização, como o **Ligar para mim** do painel. O teste gasta créditos.
   </Accordion>
   <Accordion title="Campanhas">
@@ -105,26 +118,49 @@ Cada grupo de ações depende de uma permissão, que você vê na tela de conex�
     - Passar uma conversa para a equipe ou devolver para a IA.
     - Responder uma conversa por texto, em nome da equipe.
   </Accordion>
+  <Accordion title="CRM">
+    - Criar e alterar contatos e empresas, com etiquetas e a marca de não contatar.
+    - Criar e editar negócios, mover de etapa e marcar como ganho ou perdido.
+    - Anotar na linha do tempo e criar, editar e concluir tarefas.
+    - Preencher as colunas personalizadas de um contato ou de um negócio novo.
+    - Criar, editar e arquivar colunas personalizadas: texto, número, data, seleção ou sim/não.
+    - Criar funis e ajustar as etapas, do zero ou a partir de um modelo de setor.
+    - Ligar o CRM, mudar as opções dele e dar aos agentes as funções para ler e gravar o CRM durante a conversa.
+    - Apagar negócios, contatos, empresas, notas e tarefas.
+
+    Colunas, funis e as opções do CRM são só para administrador, assim como apagar contato e empresa.
+  </Accordion>
+  <Accordion title="Automações">
+    - Montar uma automação a partir do seu pedido. Ela nasce como rascunho e não roda.
+    - Simular o caminho de um contato, sem ligar nem enviar nada.
+    - Publicar, pausar, retomar e despublicar uma automação.
+    - Ver por onde cada contato passou e tentar de novo o que parou em erro.
+
+    Montar, editar e publicar automação é só para administrador.
+  </Accordion>
 </AccordionGroup>
 
 <Note>
-  No Claude e no Claude Code, o conector não dispara ligações: as campanhas são só de WhatsApp, e repetir falhas e ligar para testar o agente ficam no ChatGPT e no painel.
+  No Claude e no Claude Code, o conector não dispara ligações: as campanhas são só de WhatsApp, o lembrete de reunião sai só pelo WhatsApp, e repetir falhas e ligar para testar o agente ficam no ChatGPT e no painel. A automação que tem bloco de ligação pode ser montada e simulada, mas é publicada pelo painel.
 </Note>
 
 <Warning>
-  Campanhas e respostas do Inbox vão para pessoas reais, e o que já foi enviado não tem volta. Campanhas e testes gastam créditos. Se o mesmo pedido for repetido logo em seguida, a Integra não executa de novo: a campanha repetida no mesmo dia devolve a que já foi criada, e a mensagem, a ligação de teste ou a criação de agente repetida em até 2 minutos não acontece outra vez.
+  Campanhas e respostas do Inbox vão para pessoas reais, e o que já foi enviado não tem volta. Uma automação publicada também roda para contatos reais, e o que você apaga no CRM não volta. Campanhas e testes gastam créditos. Se o mesmo pedido for repetido logo em seguida, a Integra não executa de novo: a campanha repetida no mesmo dia devolve a que já foi criada, e a mensagem, a ligação de teste ou a criação de agente repetida em até 2 minutos não acontece outra vez.
 </Warning>
 
 ## Permissões
 
-A tela de conexão mostra até quatro permissões, e você escolhe quais liberar:
+A tela de conexão mostra até cinco permissões, e você escolhe quais liberar:
 
 - Ver resultados, ligações, conversas, agentes, campanhas, métricas e configurações (sempre incluída)
 - Criar, cancelar e repetir campanhas (ligações e mensagens gastam créditos)
 - Criar, configurar, ativar, desativar e publicar agentes, vincular números e ligar para testar (o teste gasta créditos)
 - Assumir e responder conversas do Inbox (as mensagens vão para os seus contatos)
+- Ver, alterar e apagar contatos, empresas, negócios, tarefas e anotações, e configurar funis, campos, o CRM e as Automações
 
-A primeira vem sempre. As outras três vêm marcadas: desmarque as que não quiser dar, e o assistente fica sem as ações delas. Para mudar depois, desconecte e conecte de novo.
+A primeira vem sempre. As outras quatro vêm marcadas: desmarque as que não quiser dar, e o assistente fica sem as ações delas. Sem a permissão do CRM, ele também não vê contatos, negócios nem automações. Para mudar depois, desconecte e conecte de novo.
+
+Se você pedir algo que a conexão não libera, o assistente diz qual permissão falta e como liberar.
 
 No Claude e no Claude Code, as permissões de campanhas e de agentes aparecem sem as ligações.
 
@@ -145,6 +181,9 @@ Cada conexão vale para uma organização. Para trabalhar com outra, desconecte 
 - Listas muito grandes voltam cortadas. Peça menos itens ou filtre por período, tipo ou agente.
 - Pelo chat, uma campanha aceita até 500 contatos. Para listas maiores, importe a planilha em **Campanhas**, no painel.
 - Um dashboard mostra os últimos 7 dias, como no painel. Peça outro período se precisar.
+- Criar contato respeita o limite de contatos do plano.
+- As colunas personalizadas são preenchidas em contatos e em negócios novos. O assistente não muda as colunas de um negócio que já existe nem as de uma empresa.
+- O assistente arquiva colunas e funis, mas não apaga nenhum dos dois, e não apaga automações.
 - Cada conexão tem um limite de uso, como 5 campanhas por hora e 20 respostas do Inbox por minuto. Passando dele, nada é feito e o assistente diz quanto tempo esperar. A tabela completa está em [Servidor MCP](/servidor-mcp).
 
 ## Problemas comuns
@@ -165,8 +204,14 @@ Cada conexão vale para uma organização. Para trabalhar com outra, desconecte 
   <Accordion title="O assistente diz que o rascunho mudou">
     Alguém editou o agente no painel enquanto o assistente gravava. Peça para ele ler o agente de novo e refazer a mudança.
   </Accordion>
+  <Accordion title="O assistente diz que o CRM está desligado">
+    O CRM ainda não foi ligado na organização. Se você é administrador, peça ao assistente para ativar o CRM ou ligue em **CRM**, no painel.
+  </Accordion>
+  <Accordion title="O assistente não vê contatos nem negócios">
+    A permissão do CRM ficou desmarcada na conexão. Desconecte e conecte de novo, marcando essa permissão.
+  </Accordion>
 </AccordionGroup>
 
 ## Privacidade
 
-Para responder às suas perguntas, os dados que o assistente lê (resultados, ligações, conversas, agentes e campanhas) vão para o Claude ou para o ChatGPT, conforme o que você usa.
+Para responder às suas perguntas, os dados que o assistente lê (resultados, ligações, conversas, agentes, campanhas e, com a permissão do CRM, contatos, empresas e negócios) vão para o Claude ou para o ChatGPT, conforme o que você usa.

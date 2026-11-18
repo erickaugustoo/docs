@@ -38,6 +38,26 @@ Authorization: Bearer ik_live_sua_key_aqui
 | `GET` | `/api/v1/calls` | Listar histórico de chamadas |
 | `GET` | `/api/v1/calls/{id}` | Detalhes de uma chamada |
 
+### CRM
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/crm/pipelines` | Listar funis com as etapas |
+| `GET` | `/api/v1/crm/contacts` | Listar contatos |
+| `POST` | `/api/v1/crm/contacts` | Criar ou atualizar um contato pelo telefone |
+| `PATCH` | `/api/v1/crm/contacts/{id}` | Alterar um contato |
+| `GET` | `/api/v1/crm/deals` | Listar negócios |
+| `POST` | `/api/v1/crm/deals` | Criar um negócio |
+| `PATCH` | `/api/v1/crm/deals/{id}` | Mover, alterar ou fechar um negócio |
+| `GET` | `/api/v1/crm/activities` | Linha do tempo de um contato ou de um negócio |
+| `POST` | `/api/v1/crm/activities` | Registrar uma nota |
+| `GET` | `/api/v1/crm/fields` | Listar as colunas personalizadas |
+| `POST` | `/api/v1/crm/fields` | Criar ou atualizar uma coluna personalizada |
+| `PATCH` | `/api/v1/crm/fields/{id}` | Alterar uma coluna |
+| `DELETE` | `/api/v1/crm/fields/{id}` | Arquivar uma coluna |
+
+As rotas do CRM pedem os escopos `crm:read` (consulta) e `crm:write` (criar, alterar e arquivar) na API Key.
+
 ## Rate Limiting
 
 Limite de **60 requests por minuto** por API Key. Veja [Rate Limiting](/rate-limiting) para mais detalhes.

@@ -1,0 +1,9 @@
+---
+title: "Alterar negócio"
+description: "Muda a etapa, o valor ou marca como ganho ou perdido"
+openapi: "PATCH /api/v1/crm/deals/{id}"
+---
+
+Para mover o negócio, envie o `stage_id` de uma etapa do mesmo funil. A mudança fica registrada na linha do tempo.
+
+Para fechar, envie `status` como `won` ou `lost`: sem `stage_id`, o negócio vai para a primeira etapa desse tipo no funil. `lost_reason` só vale no negócio perdido.

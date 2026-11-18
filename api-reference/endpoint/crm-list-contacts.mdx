@@ -1,0 +1,9 @@
+---
+title: "Listar contatos"
+description: "Os contatos do CRM, os mais novos primeiro"
+openapi: "GET /api/v1/crm/contacts"
+---
+
+Cada contato vem com as tags e com as colunas personalizadas preenchidas, em `custom_fields`.
+
+Para achar um contato pelo telefone, envie `phone` em E.164 (`+5511987654321`). O celular brasileiro com ou sem o nono dígito é o mesmo contato.

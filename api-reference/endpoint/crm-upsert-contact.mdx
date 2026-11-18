@@ -1,0 +1,89 @@
+---
+title: "Criar ou atualizar contato"
+description: "Cria o contato ou atualiza o que já tem o mesmo telefone"
+openapi: "POST /api/v1/crm/contacts"
+---
+
+## Como funciona
+
+A rota decide pelo telefone. Se a organização já tem um contato com esse número, ele é atualizado com o que você enviou e a resposta é `200` com `created: false`. Sem ele, um contato novo é criado e a resposta é `201` com `created: true`.
+
+- **O que você não envia fica como está.** Para tirar o nome, o e-mail ou a empresa, envie `null`.
+- **`tags` substitui a lista inteira.** Para acrescentar uma tag sem perder as outras, leia o contato antes e envie a lista completa.
+- **`company` é o nome da empresa.** A empresa de mesmo nome é reaproveitada, e uma nova é criada quando não existe.
+- **`custom_fields` preenche as colunas personalizadas**, pela chave de cada coluna. As chaves que não vierem ficam como estão, e `null` tira o valor.
+
+## Colunas personalizadas
+
+Cada chave de `custom_fields` tem que ser de uma coluna ativa de contato. Crie as colunas no painel, em **CRM > Contatos > Nova coluna**, ou pela rota [Criar ou atualizar coluna](/api-reference/endpoint/crm-save-field).
+
+| Tipo da coluna | Valor que você envia |
+|----------------|----------------------|
+| `text` | Texto de até 500 caracteres |
+| `number` | Número |
+| `date` | Data no formato `AAAA-MM-DD` |
+| `select` | Uma das opções da coluna |
+| `boolean` | `true` ou `false` |
+
+<Warning>
+  Uma chave que não existe, ou um valor fora do tipo da coluna, recusa a requisição inteira com `400`. A mensagem aponta a chave: `custom_fields.cargo: no active custom field with this key in this organization`. Nada é gravado.
+</Warning>
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl -X POST https://api.useintegra.com.br/api/v1/crm/contacts \
+  -H "Authorization: Bearer ik_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "phone": "+5511987654321",
+    "name": "Ana Souza",
+    "email": "ana@clinicasol.com.br",
+    "company": "Clínica Sol",
+    "tags": ["lead-do-site"],
+    "custom_fields": {
+      "cargo": "Sócia",
+      "lead_desde": "2026-11-17",
+      "aceita_ligacao": true
+    }
+  }'
+```
+
+```json Resposta 201
+{
+  "created": true,
+  "contact": {
+    "id": "4ef00407-020c-4cc0-b41c-af8109e9c406",
+    "name": "Ana Souza",
+    "email": "ana@clinicasol.com.br",
+    "phone": "+5511987654321",
+    "company": { "id": "0b5c1c1e-7a57-4d0c-9a39-2f6d3b1f4c10", "name": "Clínica Sol" },
+    "source": "api",
+    "tags": ["lead-do-site"],
+    "custom_fields": {
+      "aceita_ligacao": true,
+      "cargo": "Sócia",
+      "lead_desde": "2026-11-17"
+    },
+    "legal_basis": null,
+    "opt_out": false,
+    "opt_out_at": null,
+    "last_interaction_at": null,
+    "created_at": "2026-11-17T14:00:00.000Z",
+    "updated_at": "2026-11-17T14:00:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+## Erros
+
+| Status | Quando acontece | O que fazer |
+|--------|-----------------|-------------|
+| `400` | Campo inválido, telefone fora do E.164, coluna que não existe ou valor fora do tipo | Corrija o corpo. A mensagem aponta o campo |
+| `403` | A chave não tem o escopo `crm:write`, ou o plano chegou ao limite de contatos (só na criação) | Use uma chave com o escopo certo. No limite, troque de plano ou apague contatos que não usa |
+| `409` | O CRM está desligado na organização | Ligue no painel, em **CRM > Configurações** |
+| `503` | Não foi possível conferir o limite de contatos do plano (só na criação). Nada é criado | Repita em alguns segundos |

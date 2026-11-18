@@ -3,20 +3,32 @@
   "info": {
     "title": "Integra BFI API",
     "version": "1.0.0",
-    "description": "<img src=\"/public/logo_dark.webp\" alt=\"Integra\" height=\"36\" style=\"margin-bottom:16px\" />\n\nA API da Integra para integrações externas.\n\n> [!tip]\n> **Copie a documentação completa para sua IA favorita:**\n> [Abrir página de cópia](/docs/markdown) ou baixe o [llm.txt](/llm.txt)\n\n---\n\n## Como começar\n\n### 1. Gerar sua API Key\n\nAcesse o painel da Integra em **Settings > API Keys** e clique em **Nova API Key**.\n\n> [!important]\n> Copie a key gerada (`ik_live_...`) imediatamente: ela **só será exibida uma vez**.\n\n### 2. Autenticar requests\n\nEnvie o header `Authorization` em todas as chamadas:\n\n```\nAuthorization: Bearer ik_live_sua_key_aqui\n```\n\n### 3. Fazer sua primeira chamada\n\n```bash\ncurl -H \"Authorization: Bearer ik_live_xxx\" \\\n  https://api.useintegra.com.br/api/v1/campaigns\n```\n\n> [!success]\n> Se a resposta for `200 OK` com JSON, sua integração está funcionando!\n\n---\n\n## Rate Limiting\n\n| Header | Descrição |\n|--------|-----------|\n| `X-RateLimit-Limit` | Limite total (60/min) |\n| `X-RateLimit-Remaining` | Requests restantes |\n| `X-RateLimit-Reset` | Timestamp de reset (epoch) |\n\n> [!warning]\n> Ao exceder **60 requests/minuto** por API Key, a API retorna status `429 Too Many Requests`.\n\n---\n\n## Erros comuns\n\n| Status | Erro | Causa |\n|--------|------|-------|\n| `401` | Invalid API key | Key inválida ou revogada |\n| `403` | Forbidden | Key sem permissão para o recurso |\n| `429` | Rate limit exceeded | Excedeu 60 req/min |\n| `500` | Internal server error | Erro interno, contate o suporte |\n"
+    "description": "API da Integra para integraÃ§Ãµes externas. DocumentaÃ§Ã£o completa em https://docs.useintegra.com.br"
   },
   "tags": [
     {
       "name": "Campaigns",
-      "description": "Gerenciamento de campanhas de ligações"
+      "description": "Gerenciamento de campanhas de voz e WhatsApp"
     },
     {
       "name": "Calls",
-      "description": "Histórico de chamadas"
+      "description": "HistÃ³rico de chamadas"
+    },
+    {
+      "name": "CRM",
+      "description": "CRM Integra da organizaÃ§Ã£o: funis, contatos, negÃ³cios e atividades"
+    },
+    {
+      "name": "Automations",
+      "description": "Dispara as automaÃ§Ãµes com o gatilho Chamada pela nossa API"
+    },
+    {
+      "name": "Meetings",
+      "description": "ReuniÃµes que os agentes marcaram na agenda da organizaÃ§Ã£o"
     },
     {
       "name": "Webhooks",
-      "description": "Gerenciamento de webhooks para notificações em tempo real"
+      "description": "Gerenciamento de webhooks para notificaÃ§Ãµes em tempo real"
     }
   ],
   "security": [
@@ -26,8 +38,7 @@
   ],
   "servers": [
     {
-      "url": "https://api.useintegra.com.br",
-      "description": "Production"
+      "url": "https://api.useintegra.com.br"
     }
   ],
   "components": {
@@ -36,154 +47,1453 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "API Key",
-        "description": "API Key da organização (Authorization: Bearer ik_live_xxx)"
+        "description": "API Key da organizaÃ§Ã£o (Authorization: Bearer ik_live_xxx)"
       }
     },
     "schemas": {
-      "WebhookListItem": {
+      "CrmStage": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "url": {
+          "position": {
+            "type": "number"
+          },
+          "kind": {
             "type": "string",
-            "format": "uri"
+            "enum": [
+              "open",
+              "won",
+              "lost"
+            ],
+            "description": "open (aberta), won (ganho) ou lost (perdido): o negÃ³cio na etapa fica com esse status"
           },
-          "events": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "call.completed",
-                "campaign.started",
-                "campaign.completed"
-              ]
-            }
-          },
-          "is_active": {
-            "type": "boolean"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
+          "probability": {
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [
           "id",
           "name",
-          "url",
-          "events",
-          "is_active",
-          "created_at",
-          "updated_at"
+          "position",
+          "kind",
+          "probability"
         ]
       },
-      "WebhookCreated": {
+      "CrmPipeline": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "name": {
             "type": "string"
           },
-          "url": {
-            "type": "string",
-            "format": "uri"
+          "is_default": {
+            "type": "boolean",
+            "description": "O funil padrÃ£o: recebe o negÃ³cio criado sem pipeline_id nem stage_id"
           },
-          "secret": {
-            "type": "string",
-            "description": "HMAC-SHA256 secret (exibido apenas uma vez)"
+          "position": {
+            "type": "number"
           },
-          "events": {
+          "archived_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Quando foi arquivado (nÃ£o recebe negÃ³cio); null no ativo",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CrmStage"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "description": "CriaÃ§Ã£o (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Ãltima mudanÃ§a (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "is_default",
+          "position",
+          "archived_at",
+          "stages",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "CrmContact": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "E.164 (nulo no contato sÃ³ do Instagram ou do Messenger)"
+          },
+          "company": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "import",
+              "api",
+              "assistant",
+              "call",
+              "whatsapp",
+              "instagram",
+              "messenger",
+              "campaign"
+            ],
+            "description": "De onde veio: manual, import, api, assistant, call, whatsapp, instagram, messenger ou campaign"
+          },
+          "tags": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "is_active": {
-            "type": "boolean"
+          "custom_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          },
+          "legal_basis": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "consent",
+              "legitimate_interest",
+              "contract",
+              "legal_obligation"
+            ],
+            "description": "Base legal (LGPD)"
+          },
+          "opt_out": {
+            "type": "boolean",
+            "description": "NÃ£o quer ser contatado (a campanha pula)"
+          },
+          "opt_out_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Desde quando",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "last_interaction_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Ãltima ligaÃ§Ã£o ou conversa",
+            "example": "2026-11-02T14:00:00.000Z"
           },
           "created_at": {
             "type": "string",
-            "format": "date-time"
+            "description": "CriaÃ§Ã£o (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Ãltima mudanÃ§a (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
           }
         },
         "required": [
           "id",
           "name",
-          "url",
-          "secret",
-          "events",
-          "is_active",
-          "created_at"
+          "email",
+          "phone",
+          "company",
+          "source",
+          "tags",
+          "custom_fields",
+          "legal_basis",
+          "opt_out",
+          "opt_out_at",
+          "last_interaction_at",
+          "created_at",
+          "updated_at"
         ]
       },
-      "WebhookDelivery": {
+      "CrmContactUpsert": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Telefone em E.164, com o + e o cÃ³digo do paÃ­s (+5511987654321). EspaÃ§o, parÃªnteses, ponto e traÃ§o sÃ£o aceitos e saem. Celular brasileiro sem o 9Âº dÃ­gito ganha o 9",
+            "example": "+5511987654321"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Nome; null tira"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 254,
+            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+            "example": "ana@clinica.com.br"
+          },
+          "company": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Nome da empresa: a de mesmo nome (sem diferenÃ§a de maiÃºscula) ou uma nova. null tira a empresa do contato"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "maxItems": 30,
+            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "example": [
+              "vip"
+            ]
+          },
+          "custom_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "example": {
+              "convenio": "Unimed"
+            }
+          },
+          "legal_basis": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "consent",
+              "legitimate_interest",
+              "contract",
+              "legal_obligation"
+            ],
+            "description": "Base legal (LGPD): consent, legitimate_interest, contract ou legal_obligation"
+          },
+          "opt_out": {
+            "type": "boolean",
+            "description": "true: nÃ£o quer ser contatado (a campanha pula); false desfaz"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "additionalProperties": false
+      },
+      "CrmContactUpdate": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Telefone em E.164, com o + e o cÃ³digo do paÃ­s (+5511987654321). EspaÃ§o, parÃªnteses, ponto e traÃ§o sÃ£o aceitos e saem. Celular brasileiro sem o 9Âº dÃ­gito ganha o 9",
+            "example": "+5511987654321"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Nome; null tira"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 254,
+            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+            "example": "ana@clinica.com.br"
+          },
+          "company": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Nome da empresa: a de mesmo nome (sem diferenÃ§a de maiÃºscula) ou uma nova. null tira a empresa do contato"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "maxItems": 30,
+            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "example": [
+              "vip"
+            ]
+          },
+          "custom_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "example": {
+              "convenio": "Unimed"
+            }
+          },
+          "legal_basis": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "consent",
+              "legitimate_interest",
+              "contract",
+              "legal_obligation"
+            ],
+            "description": "Base legal (LGPD): consent, legitimate_interest, contract ou legal_obligation"
+          },
+          "opt_out": {
+            "type": "boolean",
+            "description": "true: nÃ£o quer ser contatado (a campanha pula); false desfaz"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CrmDeal": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "event_type": {
             "type": "string"
           },
-          "payload": {
-            "type": "object"
+          "title": {
+            "type": "string"
+          },
+          "pipeline_id": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "won",
+                  "lost"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "kind"
+            ]
           },
           "status": {
             "type": "string",
             "enum": [
-              "PENDING",
-              "DELIVERED",
-              "FAILED"
+              "open",
+              "won",
+              "lost"
+            ],
+            "description": "open, won ou lost (o tipo da etapa)"
+          },
+          "lost_reason": {
+            "type": [
+              "string",
+              "null"
             ]
           },
-          "status_code": {
-            "type": "integer",
-            "nullable": true
+          "value_cents": {
+            "type": [
+              "number",
+              "null"
+            ]
           },
-          "response_body": {
+          "currency": {
+            "type": "string"
+          },
+          "expected_close_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "PrevisÃ£o de fechamento (AAAA-MM-DD)"
+          },
+          "contact": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "phone"
+            ]
+          },
+          "company": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "custom_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            }
+          },
+          "stage_entered_at": {
             "type": "string",
-            "nullable": true
+            "description": "Quando entrou na etapa atual",
+            "example": "2026-11-02T14:00:00.000Z"
           },
-          "attempts": {
-            "type": "integer"
-          },
-          "max_attempts": {
-            "type": "integer"
-          },
-          "last_attempt_at": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "next_retry_at": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "delivered_at": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+          "closed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Quando foi ganho ou perdido; null no aberto",
+            "example": "2026-11-02T14:00:00.000Z"
           },
           "created_at": {
             "type": "string",
-            "format": "date-time"
+            "description": "CriaÃ§Ã£o (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Ãltima mudanÃ§a (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
           }
-        }
+        },
+        "required": [
+          "id",
+          "title",
+          "pipeline_id",
+          "stage",
+          "status",
+          "lost_reason",
+          "value_cents",
+          "currency",
+          "expected_close_date",
+          "contact",
+          "company",
+          "tags",
+          "custom_fields",
+          "stage_entered_at",
+          "closed_at",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "CrmDealCreate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "pipeline_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "O funil (GET /api/v1/crm/pipelines). Sem ele e sem stage_id: o funil padrÃ£o"
+          },
+          "stage_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A etapa; com pipeline_id, tem de ser desse funil. Sem ela: a primeira etapa aberta do funil"
+          },
+          "contact_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "O contato (POST /api/v1/crm/contacts devolve o id)"
+          },
+          "value_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100000000000000,
+            "description": "Valor em centavos (R$ 1.500,00 = 150000)",
+            "example": 150000
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "Default: BRL",
+            "example": "BRL"
+          },
+          "expected_close_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-12-15"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "maxItems": 30,
+            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "example": [
+              "vip"
+            ]
+          },
+          "custom_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "example": {
+              "convenio": "Unimed"
+            }
+          },
+          "lost_reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "SÃ³ com a etapa de perdido"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "CrmDealUpdate": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "stage_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Uma etapa DO FUNIL do negÃ³cio. Mudar de etapa registra a atividade stage_change"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "won",
+              "lost"
+            ],
+            "description": "won ou lost: sem stage_id, o negÃ³cio vai para a primeira etapa desse tipo no funil; com stage_id, os dois tÃªm de concordar. Para reabrir, mande o stage_id de uma etapa aberta"
+          },
+          "lost_reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 300,
+            "description": "Motivo da perda: sÃ³ com o negÃ³cio perdido no fim. null limpa"
+          },
+          "value_cents": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 100000000000000,
+            "description": "Valor em centavos (R$ 1.500,00 = 150000)",
+            "example": 150000
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "example": "BRL"
+          },
+          "expected_close_date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "2026-12-15"
+          },
+          "contact_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "O contato; null tira"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "maxItems": 30,
+            "description": "AtÃ© 30 tags, cada uma com atÃ© 40 caracteres; a repetida sai. Substitui a lista inteira",
+            "example": [
+              "vip"
+            ]
+          },
+          "custom_fields": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "Campos personalizados (os criados no painel, em CRM > ConfiguraÃ§Ãµes), pela chave: texto (atÃ© 500), nÃºmero, data (AAAA-MM-DD), uma das opÃ§Ãµes da seleÃ§Ã£o ou true/false. null tira o valor. As chaves que nÃ£o vierem ficam como estÃ£o",
+            "example": {
+              "convenio": "Unimed"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CrmActivity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "call",
+              "whatsapp",
+              "instagram",
+              "messenger",
+              "email",
+              "meeting",
+              "note",
+              "stage_change",
+              "task",
+              "system"
+            ],
+            "description": "call, whatsapp, instagram, messenger, email, meeting, note, stage_change, task ou system"
+          },
+          "contact_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deal_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "occurred_at": {
+            "type": "string",
+            "description": "Quando aconteceu (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "actor": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent",
+              "system",
+              "api",
+              "assistant"
+            ],
+            "description": "Quem registrou: user (painel), agent, system, api ou assistant"
+          },
+          "agent_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "call_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A ligaÃ§Ã£o (o mesmo id de GET /api/v1/calls/{id}), na atividade de ligaÃ§Ã£o"
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stage_change": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "from_stage_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "to_stage_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "from_stage_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "to_stage_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "from_stage_id",
+              "to_stage_id",
+              "from_stage_name",
+              "to_stage_name"
+            ],
+            "description": "SÃ³ na stage_change"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Registro (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "contact_id",
+          "deal_id",
+          "occurred_at",
+          "actor",
+          "agent_id",
+          "call_id",
+          "title",
+          "body",
+          "stage_change",
+          "created_at"
+        ]
+      },
+      "CrmNoteCreate": {
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "O contato (ao menos um entre contact_id e deal_id)"
+          },
+          "deal_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "O negÃ³cio"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000,
+            "description": "O texto da nota (atÃ© 20.000 caracteres)"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Quando aconteceu (ISO 8601 com fuso). Default: agora"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "CrmField": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "company",
+              "deal"
+            ],
+            "description": "contact, company ou deal"
+          },
+          "key": {
+            "type": "string",
+            "description": "A chave que vai em custom_fields do contato e do negÃ³cio"
+          },
+          "label": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "select",
+              "boolean"
+            ],
+            "description": "text, number, date, select ou boolean. O tipo nunca muda depois de criado"
+          },
+          "options": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "As opÃ§Ãµes, sÃ³ em type select; null nos outros"
+          },
+          "position": {
+            "type": "number",
+            "description": "A ordem na lista (menor primeiro)"
+          },
+          "agent_writable": {
+            "type": "boolean",
+            "description": "O agente pode preencher o campo"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "CriaÃ§Ã£o (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Ãltima mudanÃ§a (UTC)",
+            "example": "2026-11-02T14:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "entity",
+          "key",
+          "label",
+          "type",
+          "options",
+          "position",
+          "agent_writable",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "CrmFieldUpsert": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "company",
+              "deal"
+            ],
+            "description": "contact, company ou deal"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "O nome que o painel mostra (atÃ© 60 caracteres)",
+            "example": "ConvÃªnio"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "date",
+              "select",
+              "boolean"
+            ],
+            "description": "text, number, date, select ou boolean. O tipo nunca muda depois de criado"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
+            "description": "A chave do campo. Sem ela, sai do rÃ³tulo (sem acento, minÃºscula, sÃ³ letras, nÃºmeros e _)",
+            "example": "convenio"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "As opÃ§Ãµes da seleÃ§Ã£o: de 1 a 50, cada uma com atÃ© 60 caracteres, sem repetir. SÃ³ em type select, e obrigatÃ³rio nele",
+            "example": [
+              "Unimed",
+              "Amil"
+            ]
+          },
+          "agent_writable": {
+            "type": "boolean",
+            "description": "O agente pode preencher. Default: true no campo novo; no que jÃ¡ existe, o valor atual fica"
+          }
+        },
+        "required": [
+          "entity",
+          "label",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "CrmFieldUpdate": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "description": "O nome que o painel mostra (atÃ© 60 caracteres)",
+            "example": "ConvÃªnio"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "description": "SÃ³ no campo de seleÃ§Ã£o (nos outros, 400)",
+            "example": [
+              "Unimed",
+              "Amil"
+            ]
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "agent_writable": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AutomationTriggerAccepted": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "automation_id": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "contact_created": {
+            "type": "boolean",
+            "description": "true quando a chamada criou o contato no CRM"
+          },
+          "deal_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "request_id": {
+            "type": "string",
+            "description": "A Idempotency-Key: o motor dispara uma vez por automaÃ§Ã£o e pedido"
+          }
+        },
+        "required": [
+          "accepted",
+          "automation_id",
+          "contact_id",
+          "contact_created",
+          "deal_id",
+          "request_id"
+        ]
+      },
+      "AutomationTriggerContact": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "description": "Telefone em E.164 (+5511987654321): acha o contato da organizaÃ§Ã£o ou cria um novo",
+            "example": "+5511987654321"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "example": "Rafael Souza"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+            "example": "rafael@empresa.com.br"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "additionalProperties": false
+      },
+      "AutomationTrigger": {
+        "type": "object",
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/AutomationTriggerContact"
+          },
+          "contact_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Um contato que jÃ¡ existe (no lugar de contact)"
+          },
+          "deal_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Um negÃ³cio do mesmo contato, que a execuÃ§Ã£o usa"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "AtÃ© 30 campos (texto atÃ© 1000, nÃºmero ou booleano). Cada um vira a marcaÃ§Ã£o {{gatilho.dados.<chave>}} na automaÃ§Ã£o. O texto nÃ£o aceita {{ nem }} nem caracteres de controle (quebra de linha e tab passam)",
+            "example": {
+              "produto": "ERP",
+              "origem": "landing"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Meeting": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID da reuniÃ£o (UUID)"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "confirmed",
+              "reschedule_requested",
+              "rescheduled",
+              "cancelled",
+              "no_response"
+            ],
+            "description": "scheduled (marcada), confirmed (o contato confirmou), reschedule_requested (o contato pediu para remarcar), rescheduled (remarcada para outro horÃ¡rio), cancelled (cancelada), no_response (o contato nÃ£o respondeu ao lembrete)"
+          },
+          "starts_at": {
+            "type": "string",
+            "description": "InÃ­cio da reuniÃ£o (UTC)",
+            "example": "2026-11-03T12:00:00.000Z"
+          },
+          "ends_at": {
+            "type": "string",
+            "description": "Fim da reuniÃ£o (UTC)",
+            "example": "2026-11-03T12:00:00.000Z"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Fuso da agenda (IANA), para exibir na hora local",
+            "example": "America/Sao_Paulo"
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "instagram",
+              "messenger",
+              "voice"
+            ],
+            "description": "Onde a reuniÃ£o foi marcada: whatsapp, instagram, messenger ou voice (ligaÃ§Ã£o)"
+          },
+          "agent_id": {
+            "type": "string",
+            "description": "ID do agente que marcou a reuniÃ£o"
+          },
+          "call_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "ID da ligaÃ§Ã£o em que a reuniÃ£o foi marcada (o mesmo de GET /api/v1/calls/{id}); nulo quando foi marcada no WhatsApp, Instagram ou Messenger"
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Telefone do contato em E.164 (nulo no Instagram e no Messenger)",
+                "example": "+5511999999999"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Nome do contato"
+              }
+            },
+            "required": [
+              "phone",
+              "name"
+            ]
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "E-mails convidados no evento da agenda"
+          },
+          "reminder": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "disabled",
+                  "pending",
+                  "sent",
+                  "skipped",
+                  "failed",
+                  "cancelled"
+                ],
+                "description": "Lembrete de confirmaÃ§Ã£o: disabled (desligado quando a reuniÃ£o foi marcada), pending (agendado), sent (enviado), skipped (nÃ£o enviado, por exemplo marcada em cima da hora ou sem telefone), failed (falhou), cancelled (a reuniÃ£o foi cancelada antes do envio)"
+              },
+              "channel": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "whatsapp",
+                  "call"
+                ],
+                "description": "Por onde o lembrete sai: whatsapp (mensagem) ou call (o agente liga para confirmar); nulo com o lembrete desligado"
+              },
+              "call_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "ID da ligaÃ§Ã£o de lembrete (o mesmo de GET /api/v1/calls/{id}), quando o lembrete Ã© por ligaÃ§Ã£o e ela jÃ¡ saiu"
+              },
+              "scheduled_for": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Quando o lembrete sai ou saiu (UTC)",
+                "example": "2026-11-03T12:00:00.000Z"
+              },
+              "sent_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Quando o lembrete foi enviado (UTC)",
+                "example": "2026-11-03T12:00:00.000Z"
+              },
+              "responded_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Quando o contato respondeu ao lembrete (UTC)",
+                "example": "2026-11-03T12:00:00.000Z"
+              }
+            },
+            "required": [
+              "status",
+              "channel",
+              "call_id",
+              "scheduled_for",
+              "sent_at",
+              "responded_at"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Quando a reuniÃ£o foi registrada (UTC)",
+            "example": "2026-11-03T12:00:00.000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Ãltima mudanÃ§a no registro (UTC)",
+            "example": "2026-11-03T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "starts_at",
+          "ends_at",
+          "timezone",
+          "channel",
+          "agent_id",
+          "call_id",
+          "contact",
+          "attendees",
+          "reminder",
+          "created_at",
+          "updated_at"
+        ]
       }
     },
     "parameters": {}
@@ -194,7 +1504,7 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Listar campanhas da organização",
+        "summary": "Listar campanhas da organizaÃ§Ã£o",
         "security": [
           {
             "ApiKey": []
@@ -204,7 +1514,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
+              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -213,7 +1523,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -426,7 +1736,7 @@
             }
           },
           "401": {
-            "description": "Não autenticado",
+            "description": "NÃ£o autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -466,12 +1776,13 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 200,
-                    "example": "Campanha Março 2026"
+                    "description": "Campaign name. Names starting with \"auto:\" are reserved for automations",
+                    "example": "Campanha MarÃ§o 2026"
                   },
                   "project_id": {
                     "type": "string",
                     "maxLength": 64,
-                    "description": "Project ID (copy from Panel → project header)",
+                    "description": "Project ID (copy from Panel â project header)",
                     "example": "b9c80a57-fad2-41a0-a304-727337ad1b1f"
                   },
                   "channel": {
@@ -487,7 +1798,7 @@
                   "agent_id": {
                     "type": "string",
                     "maxLength": 64,
-                    "description": "Agent ID (copy from Panel → agent card). Required for voice campaigns (voice agent). Optional for WhatsApp: the text agent that answers whoever replies (overrides the agent linked to the template)",
+                    "description": "Agent ID (copy from Panel â agent card). Required for voice campaigns (voice agent). Optional for WhatsApp: the text agent that answers whoever replies (overrides the agent linked to the template)",
                     "example": "7e09d093-904a-48de-ac49-b0445906c38e"
                   },
                   "phone_number_id": {
@@ -511,7 +1822,7 @@
                   "scheduled_at": {
                     "type": "string",
                     "maxLength": 64,
-                    "description": "ISO 8601 date-time with timezone offset (Z, -0300 or -03:00). Voice campaigns REQUIRE date, time and offset (400 without them), dial at this instant and are returned in São Paulo time (-03:00). WhatsApp campaigns read a value without offset as UTC and are returned in UTC (Z)",
+                    "description": "ISO 8601 date-time with timezone offset (Z, -0300 or -03:00). Voice campaigns REQUIRE date, time and offset (400 without them), dial at this instant and are returned in SÃ£o Paulo time (-03:00). WhatsApp campaigns read a value without offset as UTC and are returned in UTC (Z)",
                     "example": "2026-03-25T14:00:00-03:00"
                   },
                   "recipients": {
@@ -527,7 +1838,7 @@
                         "recipient_name": {
                           "type": "string",
                           "maxLength": 200,
-                          "example": "João Silva"
+                          "example": "JoÃ£o Silva"
                         },
                         "dynamic_variables": {
                           "type": "object",
@@ -537,7 +1848,7 @@
                           },
                           "description": "Key-value pairs for template variables (max 50 keys of up to 100 characters; values up to 1000). Voice campaigns accept free-form names used in the agent prompt (e.g. leadName for {{leadName}}). WhatsApp campaigns: numeric keys (\"1\", \"2\", ...) are the positional template parameters ({{1}}, {{2}}); named keys (e.g. leadName, empresa, email) are contact data for the text agent that answers, the same logic as voice (they go to the agent prompt, never to the message)",
                           "example": {
-                            "1": "João",
+                            "1": "JoÃ£o",
                             "2": "Acme Corp"
                           }
                         }
@@ -609,7 +1920,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -708,7 +2019,7 @@
             }
           },
           "400": {
-            "description": "Bad Request: campo inválido ou JSON malformado no corpo da requisição",
+            "description": "Bad Request: campo invÃ¡lido ou JSON malformado no corpo da requisiÃ§Ã£o",
             "content": {
               "application/json": {
                 "schema": {
@@ -744,7 +2055,7 @@
             }
           },
           "403": {
-            "description": "Limite mensal de ligações do plano atingido (canal voice)",
+            "description": "Limite mensal de ligaÃ§Ãµes do plano atingido (canal voice)",
             "content": {
               "application/json": {
                 "schema": {
@@ -762,7 +2073,7 @@
             }
           },
           "404": {
-            "description": "Projeto ou template não encontrado (canal whatsapp)",
+            "description": "Projeto ou template nÃ£o encontrado (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -780,7 +2091,7 @@
             }
           },
           "413": {
-            "description": "Corpo da requisição acima do teto de 10 MB (a lista de destinatários é grande demais)",
+            "description": "Corpo da requisiÃ§Ã£o acima do teto de 10 MB (a lista de destinatÃ¡rios Ã© grande demais)",
             "content": {
               "application/json": {
                 "schema": {
@@ -798,7 +2109,7 @@
             }
           },
           "422": {
-            "description": "Template não aprovado/desabilitado ou quota de conversas da Meta excedida (canal whatsapp)",
+            "description": "Template nÃ£o aprovado/desabilitado ou quota de conversas da Meta excedida (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -816,7 +2127,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicação com o serviço de WhatsApp. ATENÇÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada: a criação pode ter sido concluída do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir às cegas duplica o disparo para toda a lista",
+            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp. ATENÃÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada â a criaÃ§Ã£o pode ter sido concluÃ­da do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir Ã s cegas duplica o disparo para toda a lista",
             "content": {
               "application/json": {
                 "schema": {
@@ -834,7 +2145,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponível (integração não configurada) ou, no canal voice, o limite do plano não pôde ser verificado. Nada é criado; repita depois",
+            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada) ou, no canal voice, o limite do plano nÃ£o pÃ´de ser verificado. Nada Ã© criado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -859,8 +2170,8 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Conversas de WhatsApp disponíveis hoje",
-        "description": "Quantas conversas cada número de WhatsApp da organização ainda pode iniciar nas próximas 24h. O valor é o tier de mensagens que a Meta concede ao número menos as conversas já iniciadas na janela. Use antes de criar uma campanha: uma lista maior que `available` é recusada com 422 na criação.",
+        "summary": "Conversas de WhatsApp disponÃ­veis hoje",
+        "description": "Quantas conversas cada nÃºmero de WhatsApp da organizaÃ§Ã£o ainda pode iniciar nas prÃ³ximas 24h. O valor Ã© o tier de mensagens que a Meta concede ao nÃºmero menos as conversas jÃ¡ iniciadas na janela. Use antes de criar uma campanha: uma lista maior que `available` Ã© recusada com 422 na criaÃ§Ã£o.",
         "security": [
           {
             "ApiKey": []
@@ -868,7 +2179,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Quota por número conectado",
+            "description": "Quota por nÃºmero conectado",
             "content": {
               "application/json": {
                 "schema": {
@@ -881,22 +2192,22 @@
                         "properties": {
                           "external_id": {
                             "type": "string",
-                            "description": "ID do número na Meta"
+                            "description": "ID do nÃºmero na Meta"
                           },
                           "name": {
                             "type": [
                               "string",
                               "null"
                             ],
-                            "description": "Nome cadastrado do número"
+                            "description": "Nome cadastrado do nÃºmero"
                           },
                           "tier": {
                             "type": "number",
-                            "description": "Limite de conversas por 24h concedido pela Meta ao número"
+                            "description": "Limite de conversas por 24h concedido pela Meta ao nÃºmero"
                           },
                           "used_24h": {
                             "type": "number",
-                            "description": "Conversas já iniciadas nas últimas 24h"
+                            "description": "Conversas jÃ¡ iniciadas nas Ãºltimas 24h"
                           },
                           "available": {
                             "type": "number",
@@ -921,7 +2232,7 @@
             }
           },
           "401": {
-            "description": "API Key ausente ou inválida",
+            "description": "API Key ausente ou invÃ¡lida",
             "content": {
               "application/json": {
                 "schema": {
@@ -939,7 +2250,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicação com o serviço de WhatsApp",
+            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp",
             "content": {
               "application/json": {
                 "schema": {
@@ -957,7 +2268,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponível (integração não configurada)",
+            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1211,7 +2522,7 @@
             }
           },
           "404": {
-            "description": "Não encontrada",
+            "description": "NÃ£o encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -1261,7 +2572,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -1309,7 +2620,7 @@
             }
           },
           "404": {
-            "description": "Não encontrada",
+            "description": "NÃ£o encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -1327,7 +2638,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicação com o serviço de WhatsApp (canal whatsapp)",
+            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1345,7 +2656,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponível (integração não configurada)",
+            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1370,7 +2681,7 @@
         "tags": [
           "Campaigns"
         ],
-        "summary": "Retentar destinatários com falha",
+        "summary": "Retentar destinatÃ¡rios com falha",
         "security": [
           {
             "ApiKey": []
@@ -1395,7 +2706,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -1447,7 +2758,7 @@
             }
           },
           "403": {
-            "description": "Limite mensal de ligações do plano atingido (canal voice)",
+            "description": "Limite mensal de ligaÃ§Ãµes do plano atingido (canal voice)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1465,7 +2776,7 @@
             }
           },
           "404": {
-            "description": "Não encontrada",
+            "description": "NÃ£o encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -1483,7 +2794,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicação com o serviço de WhatsApp (canal whatsapp)",
+            "description": "Falha na comunicaÃ§Ã£o com o serviÃ§o de WhatsApp (canal whatsapp)",
             "content": {
               "application/json": {
                 "schema": {
@@ -1501,7 +2812,7 @@
             }
           },
           "503": {
-            "description": "Canal whatsapp indisponível (integração não configurada) ou, no canal voice, o limite do plano não pôde ser verificado. Nada é reenfileirado; repita depois",
+            "description": "Canal whatsapp indisponÃ­vel (integraÃ§Ã£o nÃ£o configurada) ou, no canal voice, o limite do plano nÃ£o pÃ´de ser verificado. Nada Ã© reenfileirado; repita depois",
             "content": {
               "application/json": {
                 "schema": {
@@ -1526,7 +2837,7 @@
         "tags": [
           "Calls"
         ],
-        "summary": "Listar histórico de chamadas da organização",
+        "summary": "Listar histÃ³rico de chamadas da organizaÃ§Ã£o",
         "security": [
           {
             "ApiKey": []
@@ -1536,7 +2847,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
+              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -1545,7 +2856,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -1575,7 +2886,7 @@
                 "INBOUND",
                 "OUTBOUND"
               ],
-              "description": "Filtrar por direção"
+              "description": "Filtrar por direÃ§Ã£o"
             },
             "required": false,
             "name": "direction",
@@ -1585,7 +2896,7 @@
             "schema": {
               "type": "string",
               "format": "date-time",
-              "description": "Data início (ISO 8601 com fuso, ex: 2026-10-01T00:00:00-03:00)"
+              "description": "Data inÃ­cio (ISO 8601 com fuso, ex: 2026-10-01T00:00:00-03:00)"
             },
             "required": false,
             "name": "from",
@@ -1731,7 +3042,7 @@
             }
           },
           "400": {
-            "description": "Filtro inválido (status, direction, from, to), page ou limit que não é inteiro, ou page acima do máximo",
+            "description": "Filtro invÃ¡lido (status, direction, from, to), page ou limit que nÃ£o Ã© inteiro, ou page acima do mÃ¡ximo",
             "content": {
               "application/json": {
                 "schema": {
@@ -1749,7 +3060,7 @@
             }
           },
           "401": {
-            "description": "Não autenticado",
+            "description": "NÃ£o autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -1913,7 +3224,2450 @@
             }
           },
           "404": {
-            "description": "Não encontrada",
+            "description": "NÃ£o encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/pipelines": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Listar funis com as etapas",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Todos os funis da organizaÃ§Ã£o (os arquivados com archived_at), na ordem, com as etapas na ordem",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pipelines": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CrmPipeline"
+                      }
+                    }
+                  },
+                  "required": [
+                    "pipelines"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/contacts": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Listar contatos",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Parte do nome ou do e-mail (sem diferenÃ§a de maiÃºscula) ou 3 ou mais dÃ­gitos do telefone"
+            },
+            "required": false,
+            "name": "search",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "description": "SÃ³ os contatos com esta tag"
+            },
+            "required": false,
+            "name": "tag",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Telefone exato em E.164 (com ou sem o 9Âº dÃ­gito, o mesmo contato)"
+            },
+            "required": false,
+            "name": "phone",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "O `pagination.next_cursor` da pÃ¡gina anterior (sem ele, a primeira pÃ¡gina)"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Os contatos, os mais novos primeiro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "contacts": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CrmContact"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "limit": {
+                          "type": "number"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Cursor da prÃ³xima pÃ¡gina; null na Ãºltima"
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "contacts",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro invÃ¡lido (search, tag, phone, cursor) ou limit que nÃ£o Ã© inteiro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Criar ou atualizar um contato pelo telefone",
+        "description": "Upsert pelo telefone: o contato da organizaÃ§Ã£o com o mesmo telefone (com ou sem o 9Âº dÃ­gito) Ã© atualizado com o que veio; sem ele, um contato novo Ã© criado, se couber no limite de contatos do plano.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmContactUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JÃ¡ existia: atualizado (created: false)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created": {
+                      "type": "boolean"
+                    },
+                    "contact": {
+                      "$ref": "#/components/schemas/CrmContact"
+                    }
+                  },
+                  "required": [
+                    "created",
+                    "contact"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Criado (created: true)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created": {
+                      "type": "boolean"
+                    },
+                    "contact": {
+                      "$ref": "#/components/schemas/CrmContact"
+                    }
+                  },
+                  "required": [
+                    "created",
+                    "contact"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido, telefone fora do E.164, campo personalizado que nÃ£o existe ou valor fora do tipo, ou JSON malformado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write, ou o limite de contatos do plano foi atingido (contato novo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "O limite de contatos do plano nÃ£o pÃ´de ser verificado (contato novo). Nada foi criado; repita depois",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/contacts/{id}": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Detalhes de um contato",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID do contato (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "O contato",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmContact"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Alterar um contato",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID do contato (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmContactUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "O contato alterado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmContact"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido, corpo vazio, telefone fora do E.164 ou campo personalizado invÃ¡lido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado, ou outro contato da organizaÃ§Ã£o jÃ¡ tem este telefone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/deals": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Listar negÃ³cios",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "SÃ³ os deste funil"
+            },
+            "required": false,
+            "name": "pipeline_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "SÃ³ os desta etapa"
+            },
+            "required": false,
+            "name": "stage_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "won",
+                "lost"
+              ],
+              "description": "open, won ou lost"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "SÃ³ os deste contato"
+            },
+            "required": false,
+            "name": "contact_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "O `pagination.next_cursor` da pÃ¡gina anterior (sem ele, a primeira pÃ¡gina)"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Os negÃ³cios, os mais novos primeiro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deals": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CrmDeal"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "limit": {
+                          "type": "number"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Cursor da prÃ³xima pÃ¡gina; null na Ãºltima"
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "deals",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro invÃ¡lido ou limit que nÃ£o Ã© inteiro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Criar um negÃ³cio",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmDealCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "O negÃ³cio criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmDeal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido; contato, funil ou etapa que nÃ£o Ã© da organizaÃ§Ã£o; etapa de outro funil; funil arquivado ou sem padrÃ£o; motivo de perda fora da etapa de perdido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/deals/{id}": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Detalhes de um negÃ³cio",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID do negÃ³cio (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "O negÃ³cio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmDeal"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Alterar um negÃ³cio (etapa, valor, ganho ou perdido)",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID do negÃ³cio (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmDealUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "O negÃ³cio alterado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmDeal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido; corpo vazio; etapa de outro funil; status que nÃ£o bate com a etapa; motivo de perda sem o negÃ³cio perdido; contato que nÃ£o Ã© da organizaÃ§Ã£o",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/activities": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Linha do tempo de um contato ou de um negÃ³cio",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A linha do tempo deste contato"
+            },
+            "required": false,
+            "name": "contact_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "A linha do tempo deste negÃ³cio"
+            },
+            "required": false,
+            "name": "deal_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "O `pagination.next_cursor` da pÃ¡gina anterior (sem ele, a primeira pÃ¡gina)"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "As atividades, a mais recente primeiro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "activities": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CrmActivity"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "limit": {
+                          "type": "number"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Cursor da prÃ³xima pÃ¡gina; null na Ãºltima"
+                        }
+                      },
+                      "required": [
+                        "limit",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "activities",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Sem contact_id nem deal_id, ou os dois; filtro invÃ¡lido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contato ou negÃ³cio nÃ£o encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Registrar uma nota",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmNoteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "A nota (type: note, actor: api)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmActivity"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido; sem contact_id nem deal_id; contato ou negÃ³cio que nÃ£o Ã© da organizaÃ§Ã£o",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/fields": {
+      "get": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Listar os campos personalizados",
+        "description": "Os campos ativos da organizaÃ§Ã£o (os arquivados nÃ£o vÃªm), na ordem da posiÃ§Ã£o. Ã a definiÃ§Ã£o: os valores ficam em custom_fields de cada contato e negÃ³cio.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "contact",
+                "company",
+                "deal"
+              ],
+              "description": "SÃ³ os desta entidade (sem ele, de todas)"
+            },
+            "required": false,
+            "name": "entity",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Os campos ativos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fields": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CrmField"
+                      }
+                    }
+                  },
+                  "required": [
+                    "fields"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entidade invÃ¡lida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Criar ou atualizar um campo personalizado pela chave",
+        "description": "Upsert pela chave dentro da entidade: sem campo ativo com a chave, cria (201); com a chave e o MESMO tipo, atualiza o rÃ³tulo, as opÃ§Ãµes e agent_writable (200); com a chave e OUTRO tipo, 409 (o tipo nunca muda). Chave de campo arquivado tambÃ©m Ã© 409: a chave nÃ£o se reaproveita. AtÃ© 50 campos ativos por entidade (409). Sem key, ela sai do rÃ³tulo. Depois de criado, o campo vale em custom_fields de POST e PATCH em /contacts e /deals.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmFieldUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JÃ¡ existia com o mesmo tipo: atualizado (created: false)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created": {
+                      "type": "boolean"
+                    },
+                    "field": {
+                      "$ref": "#/components/schemas/CrmField"
+                    }
+                  },
+                  "required": [
+                    "created",
+                    "field"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Criado (created: true)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created": {
+                      "type": "boolean"
+                    },
+                    "field": {
+                      "$ref": "#/components/schemas/CrmField"
+                    }
+                  },
+                  "required": [
+                    "created",
+                    "field"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido; select sem options; options em outro tipo; chave fora do formato",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado; a chave jÃ¡ Ã© de um campo de outro tipo ou arquivado; ou a entidade jÃ¡ tem 50 campos ativos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/crm/fields/{id}": {
+      "patch": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Alterar um campo personalizado",
+        "description": "O rÃ³tulo, as opÃ§Ãµes (sÃ³ na seleÃ§Ã£o), a posiÃ§Ã£o e se o agente preenche. A chave, o tipo e a entidade nÃ£o mudam.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID do campo (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrmFieldUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "O campo alterado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmField"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campo invÃ¡lido, corpo vazio ou options num campo que nÃ£o Ã© de seleÃ§Ã£o",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrado (ou arquivado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CRM"
+        ],
+        "summary": "Arquivar um campo personalizado",
+        "description": "O campo some da lista e da conferÃªncia dos valores; os valores jÃ¡ gravados ficam nos contatos e negÃ³cios. A chave nÃ£o pode ser recriada.",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID do campo (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Arquivado"
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo crm:write",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrado (ou jÃ¡ arquivado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "O CRM estÃ¡ desligado na organizaÃ§Ã£o (ligue no painel, em CRM > ConfiguraÃ§Ãµes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/automations/{id}/trigger": {
+      "post": {
+        "tags": [
+          "Automations"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "summary": "Dispara uma automaÃ§Ã£o com o gatilho Chamada pela nossa API",
+        "description": "Roda a automaÃ§Ã£o (ligada, com o gatilho Chamada pela nossa API) para o contato da chamada: contact.phone acha ou cria o contato no CRM (no contato que jÃ¡ existe, name e email da chamada atualizam o cadastro); contact_id usa um que jÃ¡ existe. O deal_id Ã© conferido antes: negÃ³cio que nÃ£o Ã© do contato recusa a chamada sem criar nada. Os campos de data viram as marcaÃ§Ãµes {{gatilho.dados.<chave>}}. Exige a Idempotency-Key: repetir a chamada com a mesma chave nÃ£o dispara de novo. O fim da execuÃ§Ã£o chega pelos webhooks automation.run.completed e automation.run.failed.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "O id da automaÃ§Ã£o (o do painel, em AutomaÃ§Ãµes)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "ObrigatÃ³rio: de 8 a 128 caracteres (letras, nÃºmeros, . _ : -). Um UUID serve"
+            },
+            "required": false,
+            "name": "idempotency-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutomationTrigger"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Aceita: a automaÃ§Ã£o vai rodar para o contato",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutomationTriggerAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Corpo invÃ¡lido, telefone fora do E.164, Idempotency-Key ausente ou invÃ¡lida, ou negÃ³cio que nÃ£o Ã© do contato",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo automations:trigger, ou o limite de contatos do plano foi atingido (contato novo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "AutomaÃ§Ã£o ou contato nÃ£o encontrado nesta organizaÃ§Ã£o",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A automaÃ§Ã£o nÃ£o estÃ¡ ligada, nÃ£o tem o gatilho Chamada pela nossa API, ou o CRM estÃ¡ desligado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "O limite de contatos do plano nÃ£o pÃ´de ser verificado (contato novo). Nada foi disparado; repita depois",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meetings": {
+      "get": {
+        "tags": [
+          "Meetings"
+        ],
+        "summary": "Listar reuniÃµes que os agentes marcaram",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "confirmed",
+                "reschedule_requested",
+                "rescheduled",
+                "cancelled",
+                "no_response"
+              ],
+              "description": "Filtrar por status"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Filtrar pelo agente que marcou"
+            },
+            "required": false,
+            "name": "agent_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Filtrar pela ligaÃ§Ã£o: a reuniÃ£o marcada nela ou cujo lembrete foi ela (call_id ou reminder.call_id)"
+            },
+            "required": false,
+            "name": "call_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "InÃ­cio da reuniÃ£o a partir de (ISO 8601 com fuso, ex: 2026-11-01T00:00:00-03:00)"
+            },
+            "required": false,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "description": "InÃ­cio da reuniÃ£o atÃ© (ISO 8601 com fuso, ex: 2026-11-30T23:59:59-03:00)"
+            },
+            "required": false,
+            "name": "to",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Ordem por starts_at (default: asc, a agenda)"
+            },
+            "required": false,
+            "name": "order",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de reuniÃµes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "meetings": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Meeting"
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": {
+                          "type": "number"
+                        },
+                        "limit": {
+                          "type": "number"
+                        },
+                        "total": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "page",
+                        "limit",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "meetings",
+                    "pagination"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Filtro invÃ¡lido (status, agent_id, call_id, from, to, order), page ou limit que nÃ£o Ã© inteiro, ou page acima do mÃ¡ximo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "NÃ£o autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo meetings:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/meetings/{id}": {
+      "get": {
+        "tags": [
+          "Meetings"
+        ],
+        "summary": "Detalhes de uma reuniÃ£o",
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "ID da reuniÃ£o (UUID)"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes da reuniÃ£o",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meeting"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A chave nÃ£o tem o escopo meetings:read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NÃ£o encontrada",
             "content": {
               "application/json": {
                 "schema": {
@@ -1938,7 +5692,7 @@
         "tags": [
           "Webhooks"
         ],
-        "summary": "Listar webhooks da organização",
+        "summary": "Listar webhooks da organizaÃ§Ã£o",
         "security": [
           {
             "ApiKey": []
@@ -2002,7 +5756,7 @@
             }
           },
           "401": {
-            "description": "Não autenticado",
+            "description": "NÃ£o autenticado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2055,8 +5809,8 @@
                       "maxLength": 64
                     },
                     "minItems": 1,
-                    "maxItems": 3,
-                    "description": "Eventos assinados (1 a 3): call.completed, campaign.started, campaign.completed",
+                    "maxItems": 22,
+                    "description": "Eventos assinados (1 a 22): call.completed, campaign.started, campaign.completed, meeting.scheduled, meeting.confirmed, meeting.reschedule_requested, meeting.rescheduled, meeting.cancelled, call.analyzed, conversation.analyzed, message.received, crm.contact.created, crm.contact.opted_out, crm.deal.created, crm.deal.stage_changed, crm.deal.won, crm.deal.lost, crm.task.created, crm.task.completed, crm.task.overdue, automation.run.completed, automation.run.failed",
                     "example": [
                       "call.completed"
                     ]
@@ -2073,13 +5827,13 @@
         },
         "responses": {
           "201": {
-            "description": "Webhook criado. O secret só é exibido uma vez.",
+            "description": "Webhook criado. O secret sÃ³ Ã© exibido uma vez.",
             "headers": {
               "X-Request-Id": {
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -2128,7 +5882,7 @@
             }
           },
           "400": {
-            "description": "Bad Request: campo inválido ou JSON malformado no corpo da requisição",
+            "description": "Bad Request: campo invÃ¡lido ou JSON malformado no corpo da requisiÃ§Ã£o",
             "content": {
               "application/json": {
                 "schema": {
@@ -2146,7 +5900,7 @@
             }
           },
           "413": {
-            "description": "Corpo da requisição acima do teto de 1 MB",
+            "description": "Corpo da requisiÃ§Ã£o acima do teto de 1 MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -2190,7 +5944,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Detalhes do webhook com últimas entregas",
+            "description": "Detalhes do webhook com Ãºltimas entregas",
             "content": {
               "application/json": {
                 "schema": {
@@ -2280,7 +6034,7 @@
             }
           },
           "404": {
-            "description": "Não encontrado",
+            "description": "NÃ£o encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2344,8 +6098,8 @@
                       "maxLength": 64
                     },
                     "minItems": 1,
-                    "maxItems": 3,
-                    "description": "Eventos assinados (1 a 3): call.completed, campaign.started, campaign.completed",
+                    "maxItems": 22,
+                    "description": "Eventos assinados (1 a 22): call.completed, campaign.started, campaign.completed, meeting.scheduled, meeting.confirmed, meeting.reschedule_requested, meeting.rescheduled, meeting.cancelled, call.analyzed, conversation.analyzed, message.received, crm.contact.created, crm.contact.opted_out, crm.deal.created, crm.deal.stage_changed, crm.deal.won, crm.deal.lost, crm.task.created, crm.task.completed, crm.task.overdue, automation.run.completed, automation.run.failed",
                     "example": [
                       "call.completed"
                     ]
@@ -2366,7 +6120,7 @@
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -2415,7 +6169,7 @@
             }
           },
           "404": {
-            "description": "Não encontrado",
+            "description": "NÃ£o encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2433,7 +6187,7 @@
             }
           },
           "413": {
-            "description": "Corpo da requisição acima do teto de 1 MB",
+            "description": "Corpo da requisiÃ§Ã£o acima do teto de 1 MB",
             "content": {
               "application/json": {
                 "schema": {
@@ -2475,13 +6229,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Webhook excluído",
+            "description": "Webhook excluÃ­do",
             "headers": {
               "X-Request-Id": {
                 "schema": {
                   "type": "string",
                   "format": "uuid",
-                  "description": "Id desta requisição na trilha de auditoria (cite-o ao suporte)"
+                  "description": "Id desta requisiÃ§Ã£o na trilha de auditoria (cite-o ao suporte)"
                 },
                 "required": true
               }
@@ -2503,7 +6257,7 @@
             }
           },
           "404": {
-            "description": "Não encontrado",
+            "description": "NÃ£o encontrado",
             "content": {
               "application/json": {
                 "schema": {
@@ -2547,7 +6301,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Página: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que não é inteiro, responde 400"
+              "description": "PÃ¡gina: inteiro (default: 1). Abaixo de 1 vale 1; acima de 1000000, ou o que nÃ£o Ã© inteiro, responde 400"
             },
             "required": false,
             "name": "page",
@@ -2556,7 +6310,7 @@
           {
             "schema": {
               "type": "string",
-              "description": "Itens por página: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que não é inteiro responde 400"
+              "description": "Itens por pÃ¡gina: inteiro (default: 20). Abaixo de 1 vale 1 e acima de 100 vale 100; o que nÃ£o Ã© inteiro responde 400"
             },
             "required": false,
             "name": "limit",
@@ -2670,7 +6424,7 @@
             }
           },
           "400": {
-            "description": "page ou limit que não é inteiro, ou page acima do máximo",
+            "description": "page ou limit que nÃ£o Ã© inteiro, ou page acima do mÃ¡ximo",
             "content": {
               "application/json": {
                 "schema": {
@@ -2688,7 +6442,7 @@
             }
           },
           "404": {
-            "description": "Webhook não encontrado",
+            "description": "Webhook nÃ£o encontrado",
             "content": {
               "application/json": {
                 "schema": {

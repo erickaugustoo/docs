@@ -1,0 +1,13 @@
+---
+title: "Listar colunas"
+description: "As colunas personalizadas ativas de contatos, empresas e negócios"
+openapi: "GET /api/v1/crm/fields"
+---
+
+As colunas personalizadas são os campos que a sua organização cria além dos fixos (nome, telefone, e-mail, empresa e tags). No painel, cada coluna de contato aparece na lista de **CRM > Contatos**.
+
+Envie `entity` para ver só as de um tipo: `contact`, `company` ou `deal`. A `key` de cada coluna é o que você usa em `custom_fields` ao [criar ou atualizar um contato](/api-reference/endpoint/crm-upsert-contact) ou um [negócio](/api-reference/endpoint/crm-create-deal).
+
+<Note>
+  As rotas do CRM pedem o CRM ligado na organização. Com ele desligado, a resposta é `409`. Ligue no painel, em **CRM > Configurações**.
+</Note>

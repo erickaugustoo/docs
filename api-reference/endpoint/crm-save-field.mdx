@@ -1,0 +1,78 @@
+---
+title: "Criar ou atualizar coluna"
+description: "Cria uma coluna personalizada ou atualiza a que já tem a mesma chave"
+openapi: "POST /api/v1/crm/fields"
+---
+
+## Como funciona
+
+A rota decide pela `key` dentro da entidade. Se não existe coluna ativa com essa chave, ela é criada e a resposta é `201` com `created: true`. Se já existe com o mesmo tipo, o rótulo e as opções são atualizados e a resposta é `200` com `created: false`. Por isso você pode chamar a rota sempre que a sua integração sobe, sem conferir antes.
+
+Sem `key`, a chave sai do rótulo: "Convênio médico" vira `convenio_medico`.
+
+| Tipo (`type`) | Para que serve |
+|----------------|----------------|
+| `text` | Texto livre de até 500 caracteres |
+| `number` | Número |
+| `date` | Data (`AAAA-MM-DD`) |
+| `select` | Uma opção de uma lista. Exige `options`, com 1 a 50 opções de até 60 caracteres |
+| `boolean` | Sim ou não |
+
+`agent_writable` diz se os agentes podem preencher a coluna durante a ligação ou a conversa. Vale `true` na criação quando você não envia.
+
+<Warning>
+  A chave, o tipo e a entidade não mudam depois que a coluna existe. Enviar a mesma chave com outro tipo responde `409`.
+</Warning>
+
+## Exemplo
+
+<CodeGroup>
+
+```bash Requisição
+curl -X POST https://api.useintegra.com.br/api/v1/crm/fields \
+  -H "Authorization: Bearer ik_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "entity": "contact",
+    "label": "Convênio",
+    "type": "select",
+    "options": ["Particular", "Unimed", "Amil"]
+  }'
+```
+
+```json Resposta 201
+{
+  "created": true,
+  "field": {
+    "id": "ea36701c-81d9-4f33-a46f-3bf58274d29a",
+    "entity": "contact",
+    "key": "convenio",
+    "label": "Convênio",
+    "type": "select",
+    "options": ["Particular", "Unimed", "Amil"],
+    "position": 0,
+    "agent_writable": true,
+    "created_at": "2026-11-17T14:00:00.000Z",
+    "updated_at": "2026-11-17T14:00:00.000Z"
+  }
+}
+```
+
+</CodeGroup>
+
+## Limites
+
+| O quê | Teto |
+|-------|------|
+| Colunas ativas por entidade | 50 |
+| `label` | 60 caracteres |
+| `key` | 40 caracteres: letras minúsculas, números e `_`, começando por letra |
+| `options` | 50 opções de até 60 caracteres, sem repetir |
+
+## Erros
+
+| Status | Quando acontece | O que fazer |
+|--------|-----------------|-------------|
+| `400` | Campo inválido, `select` sem `options`, ou `options` em outro tipo | Corrija o corpo. A mensagem aponta o campo |
+| `403` | A chave não tem o escopo `crm:write` | Use uma chave com o escopo certo |
+| `409` | A chave já existe com outro tipo, é de uma coluna arquivada, a entidade já tem 50 colunas ativas, ou o CRM está desligado | Use outra chave, arquive uma coluna que não usa, ou ligue o CRM no painel |

@@ -1,0 +1,27 @@
+---
+title: "Criar negócio"
+description: "Abre um negócio num funil, ligado ou não a um contato"
+openapi: "POST /api/v1/crm/deals"
+---
+
+Sem `pipeline_id` e sem `stage_id`, o negócio entra na primeira etapa aberta do funil padrão. Veja os ids em [Listar funis](/api-reference/endpoint/crm-list-pipelines).
+
+`value_cents` é o valor em centavos: R$ 1.500,00 é `150000`.
+
+`custom_fields` preenche as colunas personalizadas de **negócio**, com as mesmas regras das de contato: a chave tem que ser de uma coluna ativa e o valor do tipo dela.
+
+<CodeGroup>
+
+```bash Requisição
+curl -X POST https://api.useintegra.com.br/api/v1/crm/deals \
+  -H "Authorization: Bearer ik_live_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Plano anual Clínica Sol",
+    "contact_id": "4ef00407-020c-4cc0-b41c-af8109e9c406",
+    "value_cents": 150000,
+    "expected_close_date": "2026-12-15"
+  }'
+```
+
+</CodeGroup>
