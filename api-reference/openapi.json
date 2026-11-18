@@ -2128,7 +2128,7 @@
             }
           },
           "502": {
-            "description": "Falha na comunicação com o serviço de WhatsApp. ATENÇÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada — a criação pode ter sido concluída do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir às cegas duplica o disparo para toda a lista",
+            "description": "Falha na comunicação com o serviço de WhatsApp. ATENÇÃO: um 502 aqui NÃO garante que a campanha deixou de ser criada: a criação pode ter sido concluída do outro lado depois do timeout. Antes de repetir a chamada, liste suas campanhas (GET /api/v1/campaigns); repetir às cegas duplica o disparo para toda a lista",
             "content": {
               "application/json": {
                 "schema": {
